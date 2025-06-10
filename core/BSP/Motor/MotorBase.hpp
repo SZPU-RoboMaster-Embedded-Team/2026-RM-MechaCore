@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "User/BSP/Common/StateWatch/state_watch.hpp"
-#include "User/HAL/CAN/can_hal.hpp"
+#include "core/BSP/Common/StateWatch/state_watch.hpp"
+#include "core/HAL/CAN/can_hal.hpp"
 
 namespace BSP::Motor
 {

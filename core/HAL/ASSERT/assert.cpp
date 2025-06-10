@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-#include "User/HAL/LOGGER/logger.hpp"
+#include "core/HAL/LOGGER/logger.hpp"
 #include <main.h>
 
 const char *assert_file = nullptr;

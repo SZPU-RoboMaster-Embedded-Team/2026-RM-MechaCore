@@ -1,9 +1,9 @@
-#include "User/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
-#include "User/BSP/Common/StateWatch/state_watch.hpp"
-#include "User/BSP/Motor/Dji/DjiMotor.hpp"
-#include "User/HAL/CAN/can_hal.hpp"
-#include "User/HAL/LOGGER/logger.hpp"
-#include "User/HAL/UART/uart_hal.hpp"
+#include "core/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
+#include "core/BSP/Common/StateWatch/state_watch.hpp"
+#include "core/BSP/Motor/Dji/DjiMotor.hpp"
+#include "core/HAL/CAN/can_hal.hpp"
+#include "core/HAL/LOGGER/logger.hpp"
+#include "core/HAL/UART/uart_hal.hpp"
 #include <cstring>
 
 uint8_t buffer[3] = {0};

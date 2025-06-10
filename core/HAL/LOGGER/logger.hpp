@@ -11,9 +11,8 @@
 
 #pragma once
 
-#include "User/BSP/Common/SEGGER/Config/SEGGER_RTT_Conf.h"
-#include "User/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
-
+#include "core/BSP/Common/SEGGER/Config/SEGGER_RTT_Conf.h"
+#include "core/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
 
 namespace HAL::LOGGER
 {
@@ -39,7 +38,6 @@ enum class LogLevel
     ERROR,
     FATAL
 };
-
 
 class Logger
 {
