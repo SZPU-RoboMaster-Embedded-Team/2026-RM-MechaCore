@@ -3,8 +3,8 @@
 #include "core/HAL/CAN/can_hal.hpp"
 #include "core/HAL/LOGGER/logger.hpp"
 #include "core/HAL/UART/uart_hal.hpp"
-#include <cstring>
 
+#include <cstring>
 uint8_t buffer[3] = {0};
 auto uatr_rx_frame = HAL::UART::Data{buffer, 3};
 
