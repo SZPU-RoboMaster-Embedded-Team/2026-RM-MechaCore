@@ -40,8 +40,17 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
-# 设置core目录路径
+# 设置core目录路径和项目根目录
 set(CORE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../core")
+set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+# 递归查找core目录下的所有源文件
+file(GLOB_RECURSE CORE_SOURCES 
+    "${CORE_DIR}/*.c"
+    "${CORE_DIR}/*.cpp"
+)
+
+# message("Core sources: ${CORE_SOURCES}")
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -51,21 +60,21 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    # 添加core目录下的源文件
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/BSP
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/HAL
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/APP
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/Alg
+    ${CORE_SOURCES}  # 添加core源文件
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
-    # 添加core目录下的头文件路径
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/BSP
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/HAL
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/APP
-    ${CMAKE_CURRENT_SOURCE_DIR}/../core/Alg
+    # 添加项目根目录（用于相对路径引用）
+    ${ROOT_DIR}
+
+)
+
+# 使用GLOB_RECURSE自动查找所有源文件
+file(GLOB_RECURSE USER_SOURCES 
+    "User/*.cpp"
+    "User/*.c"
 )
 
 # Add project symbols (macros)

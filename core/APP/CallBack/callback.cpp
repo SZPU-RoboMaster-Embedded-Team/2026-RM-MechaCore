@@ -34,6 +34,7 @@ uint32_t pos = 0;
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
+
     can1.receive(rx_frame);
     if (hcan == can1.get_handle())
     {

@@ -13,6 +13,8 @@
 
 #include "core/BSP/Common/SEGGER/Config/SEGGER_RTT_Conf.h"
 #include "core/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
+#include "main.h"
+#include <cstdint>
 
 namespace HAL::LOGGER
 {
@@ -214,6 +216,6 @@ class Logger
 };
 
 // 初始化静态成员变量
-Logger *Logger::instance = nullptr;
+inline Logger *Logger::instance = nullptr;
 
 } // namespace HAL::LOGGER
