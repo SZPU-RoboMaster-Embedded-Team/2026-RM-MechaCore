@@ -30,6 +30,7 @@
 │   │
 │   ├── engineer/          # 工程车
 │   ├── sentry/            # 哨兵
+│   ├── dart/              # 飞镖
 │   └── ...            
 ├── common/                # 核心通用库开发
 ```
@@ -57,6 +58,18 @@
 
 测试周期流程图
 
-![deepseek_mermaid_20250607_ab4289](./assets/deepseek_mermaid_20250607_ab4289.png)
+```mermaid
+graph LR
+    A[创建分支 feat-gimbal-pid] --> B[开发调试]
+    B --> C[Push到GitHub]
+    C --> D[创建Pull Request]
+    D --> E[代码审核]
+    E --> F{审核通过?}
+    F -->|是| G[合并到 dev-hero]
+    F -->|否| H[返回修改]
+    G --> I[测试英雄车]
+    I --> J{通过?}
+    J -->|是| K[PR合并到 main]
+```
 
 dev为各兵种的主力开发分支，定期合并至main(不用特别实时，但是一定要测试至稳定后)
