@@ -11,7 +11,13 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
 
+# 添加编译器标志来忽略特定警告
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -68,13 +74,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     # 添加项目根目录（用于相对路径引用）
     ${ROOT_DIR}
-
-)
-
-# 使用GLOB_RECURSE自动查找所有源文件
-file(GLOB_RECURSE USER_SOURCES 
-    "User/*.cpp"
-    "User/*.c"
 )
 
 # Add project symbols (macros)

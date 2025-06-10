@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "core/BSP/Common/SEGGER/Config/SEGGER_RTT_Conf.h"
-#include "core/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
+#include "SEGGER/Config/SEGGER_RTT_Conf.h"
+#include "SEGGER/RTT/SEGGER_RTT.h"
 #include "main.h"
 #include <cstdint>
 

@@ -1,4 +1,3 @@
-#include "core/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
 #include "core/BSP/Common/StateWatch/state_watch.hpp"
 #include "core/BSP/Motor/Dji/DjiMotor.hpp"
 #include "core/HAL/CAN/can_hal.hpp"
