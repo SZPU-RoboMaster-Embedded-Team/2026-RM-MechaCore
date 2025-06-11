@@ -1,6 +1,6 @@
 #pragma once
 #include "../MotorBase.hpp"
-#include "User/BSP/Common/StateWatch/state_watch.hpp"
+#include "core/BSP/Common/StateWatch/state_watch.hpp"
 namespace BSP::Motor::DM
 {
 // 参数结构体定义

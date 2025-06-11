@@ -197,7 +197,6 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
     uint8_t recv_idxs_[N];         // ID索引
     uint32_t send_idxs_;
     HAL::CAN::Frame tx_frame;
-    HAL::CAN::Frame rx_frame;
 
   public:
     Parameters params_; // 转国际单位参数列表

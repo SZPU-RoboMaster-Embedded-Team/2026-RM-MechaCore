@@ -1,13 +1,13 @@
-#include "User/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
-#include "User/BSP/Common/StateWatch/state_watch.hpp"
-#include "User/BSP/Motor/Dji/DjiMotor.hpp"
-#include "User/HAL/CAN/can_hal.hpp"
-#include "User/HAL/LOGGER/logger.hpp"
-#include "User/HAL/UART/uart_hal.hpp"
-#include <cstring>
+#include "core/BSP/Common/StateWatch/state_watch.hpp"
+#include "core/BSP/Motor/Dji/DjiMotor.hpp"
+#include "core/HAL/CAN/can_hal.hpp"
+#include "core/HAL/LOGGER/logger.hpp"
+#include "core/HAL/UART/uart_hal.hpp"
 
+#include <cstring>
 uint8_t buffer[3] = {0};
 auto uatr_rx_frame = HAL::UART::Data{buffer, 3};
+uint16_t speed = 0;
 
 extern "C"
 {
@@ -22,10 +22,20 @@ extern "C"
 
     void InWhile()
     {
+        auto &log = HAL::LOGGER::Logger::getInstance();
+        auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
+
+        uint16_t pos = static_cast<uint32_t>(BSP::Motor::Dji::Motor6020.getAngleDeg(1));
+
+        log.trace("Pos:%d\n", pos);
+
+        BSP::Motor::Dji::Motor6020.setCAN(speed, 2);
+        BSP::Motor::Dji::Motor6020.sendCAN(&can1);
+
+        HAL_Delay(5);
     }
 } // extern "C"
 
-uint16_t speed = 0;
 uint8_t data[8] = {0};
 
 HAL::CAN::Frame rx_frame;
@@ -34,6 +44,7 @@ uint32_t pos = 0;
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
+
     can1.receive(rx_frame);
     if (hcan == can1.get_handle())
     {

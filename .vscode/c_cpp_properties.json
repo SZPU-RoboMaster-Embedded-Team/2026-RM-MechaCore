@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "STM32F407IGHx",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "USE_HAL_DRIVER",
+                "STM32F407xx"
+            ],
+            // "compilerPath": "E:/Compiler/arm-none-eabi/bin/arm-none-eabi-gcc.exe",
+            "compilerPath": "D:/Compiler/arm-none-eabi/bin/arm-none-eabi-gcc.exe",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compilerArgs": [
+                "-Wno-unused-parameter"
+            ]
+        }
+    ],
+    "version": 4
+}

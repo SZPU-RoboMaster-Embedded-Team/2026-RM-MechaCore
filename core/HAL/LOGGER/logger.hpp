@@ -11,9 +11,10 @@
 
 #pragma once
 
-#include "User/BSP/Common/SEGGER/Config/SEGGER_RTT_Conf.h"
-#include "User/BSP/Common/SEGGER/RTT/SEGGER_RTT.h"
-
+#include "SEGGER/Config/SEGGER_RTT_Conf.h"
+#include "SEGGER/RTT/SEGGER_RTT.h"
+#include "main.h"
+#include <cstdint>
 
 namespace HAL::LOGGER
 {
@@ -39,7 +40,6 @@ enum class LogLevel
     ERROR,
     FATAL
 };
-
 
 class Logger
 {
@@ -216,6 +216,6 @@ class Logger
 };
 
 // 初始化静态成员变量
-Logger *Logger::instance = nullptr;
+inline Logger *Logger::instance = nullptr;
 
 } // namespace HAL::LOGGER
