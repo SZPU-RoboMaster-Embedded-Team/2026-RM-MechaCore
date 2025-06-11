@@ -7,6 +7,7 @@
 #include <cstring>
 uint8_t buffer[3] = {0};
 auto uatr_rx_frame = HAL::UART::Data{buffer, 3};
+uint16_t speed = 0;
 
 extern "C"
 {
@@ -21,10 +22,20 @@ extern "C"
 
     void InWhile()
     {
+        auto &log = HAL::LOGGER::Logger::getInstance();
+        auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
+
+        uint16_t pos = static_cast<uint32_t>(BSP::Motor::Dji::Motor6020.getAngleDeg(1));
+
+        log.trace("Pos:%d\n", pos);
+
+        BSP::Motor::Dji::Motor6020.setCAN(speed, 2);
+        BSP::Motor::Dji::Motor6020.sendCAN(&can1);
+
+        HAL_Delay(5);
     }
 } // extern "C"
 
-uint16_t speed = 0;
 uint8_t data[8] = {0};
 
 HAL::CAN::Frame rx_frame;

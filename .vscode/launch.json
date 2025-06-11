@@ -7,7 +7,7 @@
         {
             "name": "STM32F407IGHx",
             "cwd": "${workspaceFolder}",
-            "executable": "build/Cpp_small_task.elf",
+            "executable": "common/build/common.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
