@@ -1,1 +1,16 @@
-common/build/
+MDK-ARM/SG_CHASSIS_C_2024_11_5/
+MDKARM/build/
+MDK-ARM/SG_CHASSIS_C_2024_11_5_EIDE/
+MDK-ARM/*.uvoptx
+MDK-ARM/*.uvguix.*
+.vs/
+.vscode/
+CppProperties.json
+MDK-ARM/SG_GIMBAL_C_2025_2_7/
+MDK-ARM/SG_GIMBAL_C_2025_2_7_EIDE/
+MDK-ARM/*.uvoptx
+MDK-ARM/*.uvguix.*
+.vs/
+.vscode/
+CppProperties.json
+*.
