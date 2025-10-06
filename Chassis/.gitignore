@@ -1,0 +1,8 @@
+MDK-ARM/SG_CHASSIS_C_2024_11_5/
+MDKARM/build/
+MDK-ARM/SG_CHASSIS_C_2024_11_5_EIDE/
+MDK-ARM/*.uvoptx
+MDK-ARM/*.uvguix.*
+.vs/
+.vscode/
+CppProperties.json

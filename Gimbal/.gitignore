@@ -1,0 +1,8 @@
+MDK-ARM/SG_GIMBAL_C_2025_2_7/
+MDK-ARM/SG_GIMBAL_C_2025_2_7_EIDE/
+MDK-ARM/*.uvoptx
+MDK-ARM/*.uvguix.*
+.vs/
+.vscode/
+CppProperties.json
+*.o

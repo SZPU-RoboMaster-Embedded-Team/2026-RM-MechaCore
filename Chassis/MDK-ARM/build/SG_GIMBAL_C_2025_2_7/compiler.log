@@ -1,0 +1,340 @@
+>>> cc
+
+In file included from ./../Core/Src/can.c:21:
+In file included from ../Core/Inc\can.h:29:
+In file included from ../Core/Inc/main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/dma.c:22:
+In file included from ../Core/Inc\dma.h:29:
+In file included from ../Core/Inc/main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/stm32f4xx_hal_msp.c:23:
+In file included from ../Core/Inc\main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/freertos.c:23:
+In file included from ../Core/Inc\main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/gpio.c:22:
+In file included from ../Core/Inc\gpio.h:29:
+In file included from ../Core/Inc/main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c:97:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/stm32f4xx_it.c:21:
+In file included from ../Core/Inc\main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c:213:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/system_stm32f4xx.c:48:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c:36:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/usart.c:21:
+In file included from ../Core/Inc\usart.h:29:
+In file included from ../Core/Inc/main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c:76:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c:86:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/main.c:20:
+In file included from ../Core/Inc\main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c:62:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c:47:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c:108:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/stm32f4xx_hal_timebase_tim.c:21:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c:67:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c:81:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c:23:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c:81:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c:258:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c:24:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:34:
+In file included from ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/freertos_os2.h:31:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c:39:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c:23:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Core/Src/tim.c:21:
+In file included from ../Core/Inc\tim.h:29:
+In file included from ../Core/Inc/main.h:30:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+In file included from ./../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c:186:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal.h:29:
+In file included from ../Core/Inc\stm32f4xx_hal_conf.h:275:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc\stm32f4xx_hal_rcc.h:27:
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:29:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include\stm32f4xx.h:132:
+In file included from ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:166:
+../Drivers/CMSIS/Include\core_cm4.h:93:8: warning: "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)" [-W#warnings]
+      #warning "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
+       ^
+1 warning generated.
+
+>>> ld
+
+Error: L6218E: Undefined symbol ChassisTask (referred from freertos.o).
+Error: L6218E: Undefined symbol CommunicationTask (referred from freertos.o).
+Error: L6218E: Undefined symbol EventTask (referred from freertos.o).
+Error: L6218E: Undefined symbol RLSTask (referred from freertos.o).
+Error: L6218E: Undefined symbol RefeeTask (referred from freertos.o).
+Error: L6218E: Undefined symbol DirUpdata (referred from main.o).
+Error: L6218E: Undefined symbol Init (referred from main.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 7 error messages.

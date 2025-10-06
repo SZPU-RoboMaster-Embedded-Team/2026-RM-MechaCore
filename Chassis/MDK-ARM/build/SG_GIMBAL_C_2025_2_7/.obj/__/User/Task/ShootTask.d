@@ -1,0 +1,66 @@
+./build/SG_GIMBAL_C_2025_2_7/.obj/__/User/Task/ShootTask.o: \
+  ..\User\Task\ShootTask.cpp ..\User\Task\..\Task\ShootTask.hpp \
+  ..\User\Task\..\Task\..\APP\Heat_Detector\Heat_Detector.hpp \
+  ..\USB_DEVICE\..\User\Algorithm\FSM\alg_fsm.hpp \
+  ..\USB_DEVICE\..\User\Algorithm\SlidingWindow\SlidingWindow.hpp \
+  ..\USB_DEVICE\..\User\BSP\DWT\DWT.hpp \
+  ..\User\Task\..\Task\..\Algorithm\FSM\alg_fsm.hpp \
+  ..\User\Task\..\Task\..\Algorithm\LADRC\Adrc.hpp \
+  ..\User\Task\..\Task\..\BSP\SimpleKey\SimpleKey.hpp \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  ..\Core\Inc\stm32f4xx_hal_conf.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
+  ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h \
+  ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h \
+  ..\Drivers\CMSIS\Include\core_cm4.h \
+  ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_gpio.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_gpio_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_exti.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_dma.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_dma_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_cortex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_can.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ramfunc.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_ll_usb.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd_ex.h \
+  ..\USB_DEVICE\..\User\Algorithm\PID.hpp \
+  ..\USB_DEVICE\..\User\Algorithm\..\BSP\stdxxx.hpp \
+  ..\User\Task\..\Task\CommunicationTask.hpp \
+  ..\User\Task\..\Task\..\APP\Tools.hpp \
+  ..\User\Task\..\Task\..\APP\..\BSP\stdxxx.hpp \
+  ..\User\Task\..\Task\..\BSP\stdxxx.hpp \
+  ..\User\Task\..\Task\..\Task\EvenTask.hpp \
+  ..\User\Task\..\APP\Mod\RemoteModeManager.hpp \
+  ..\USB_DEVICE\..\User\Task\CommunicationTask.hpp \
+  ..\User\Task\..\APP\Mod\IRemoteController.hpp \
+  ..\User\Task\..\APP\Mod\..\..\BSP\Remote\Dbus\Dbus.hpp \
+  ..\USB_DEVICE\..\User\BSP\StaticTime.hpp \
+  ..\USB_DEVICE\..\User\BSP\..\BSP\stdxxx.hpp \
+  ..\USB_DEVICE\..\User\BSP\..\BSP\Remote\Key.hpp ..\Core\Inc\usart.h \
+  ..\Core\Inc\main.h \
+  ..\User\Task\..\APP\Mod\RemoteControl\DR16Controller.hpp \
+  ..\User\Task\..\APP\Mod\RemoteControl\..\IRemoteController.hpp \
+  ..\USB_DEVICE\..\User\BSP\Remote\Dbus\Dbus.hpp \
+  ..\USB_DEVICE\..\User\Task\EvenTask.hpp \
+  ..\User\Task\..\APP\Mod\RemoteControl\MiniController.hpp \
+  ..\Core\Inc\..\..\User\BSP\Remote\Mini\Mini.hpp \
+  ..\Core\Inc\..\..\User\BSP\Remote\Mini\..\Dbus\Dbus.hpp \
+  ..\Core\Inc\..\..\User\BSP\SimpleKey\SimpleKey.hpp \
+  ..\User\Task\..\APP\Tools.hpp \
+  ..\User\Task\..\BSP\Motor\Dji\DjiMotor.hpp \
+  ..\User\Task\..\BSP\Motor\Dji\..\MotorBase.hpp \
+  ..\User\Task\..\BSP\Motor\Dji\..\..\CAN\Bsp_Can.hpp ..\Core\Inc\can.h \
+  ..\User\Task\..\BSP\Motor\Dji\..\..\StaticTime.hpp \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h

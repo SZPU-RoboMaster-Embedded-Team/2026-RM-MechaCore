@@ -1,0 +1,54 @@
+./build/SG_GIMBAL_C_2025_2_7/.obj/__/User/Task/CallBack.o: \
+  ..\User\Task\CallBack.cpp ..\User\Task\..\Task\CallBack.hpp \
+  ..\Core\Inc\can.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  ..\Core\Inc\stm32f4xx_hal_conf.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
+  ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h \
+  ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h \
+  ..\Drivers\CMSIS\Include\core_cm4.h \
+  ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_gpio.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_gpio_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_exti.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_dma.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_dma_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_cortex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_can.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ramfunc.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_ll_usb.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pcd_ex.h \
+  ..\Core\Inc\usart.h ..\User\Task\..\APP\Variable.hpp \
+  ..\User\Task\..\APP\..\Algorithm\PID.hpp \
+  ..\User\Task\..\APP\..\Algorithm\..\BSP\stdxxx.hpp \
+  ..\User\Task\..\APP\..\Algorithm\Ude.hpp \
+  ..\User\Task\..\APP\..\Task\EvenTask.hpp \
+  ..\User\Task\..\APP\..\Algorithm\LADRC\Adrc.hpp \
+  ..\User\Task\..\BSP\IMU\HI12H3_IMU.hpp \
+  ..\User\Task\..\BSP\IMU\..\StaticTime.hpp \
+  ..\User\Task\..\BSP\IMU\..\..\BSP\stdxxx.hpp \
+  ..\User\Task\..\BSP\IMU\..\..\BSP\Remote\Key.hpp \
+  ..\User\Task\..\BSP\IMU\..\stdxxx.hpp \
+  ..\User\Task\..\BSP\Motor\DM\DmMotor.hpp \
+  ..\User\Task\..\BSP\Motor\DM\..\MotorBase.hpp \
+  ..\User\Task\..\BSP\Motor\DM\..\..\CAN\Bsp_Can.hpp \
+  ..\User\Task\..\BSP\Motor\DM\..\..\StaticTime.hpp \
+  ..\User\Task\..\BSP\Motor\Dji\DjiMotor.hpp \
+  ..\User\Task\..\BSP\Motor\Dji\..\MotorBase.hpp \
+  ..\User\Task\..\BSP\Remote\Dbus\Dbus.hpp \
+  ..\USB_DEVICE\..\User\BSP\StaticTime.hpp \
+  ..\User\Task\..\BSP\Remote\Mini\Mini.hpp \
+  ..\User\Task\..\BSP\Remote\Mini\..\Dbus\Dbus.hpp \
+  ..\User\Task\..\HAL\My_HAL.hpp \
+  ..\User\Task\..\HAL\..\BSP\CAN\Bsp_Can.hpp ..\Core\Inc\gpio.h

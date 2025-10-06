@@ -1,0 +1,31 @@
+##########################################################################################
+#                        Append Compiler Options For Source Files
+##########################################################################################
+
+# syntax:
+#   <your pattern>: <compiler options>
+# For get pattern syntax, please refer to: https://www.npmjs.com/package/micromatch
+#
+# examples:
+#   'main.cpp':           --cpp11 -Og ...
+#   'src/*.c':            -gnu -O2 ...
+#   'src/lib/**/*.cpp':   --cpp11 -Os ...
+#   '!Application/*.c':   -O0
+#   '**/*.c':             -O2 -gnu ...
+
+version: "2.0"
+options:
+    SG_GIMBAL_C_2025_2_7:
+        files: {}
+        virtualPathFiles:
+            <virtual_root>/Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_pcd.c: ""
+            <virtual_root>/Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_pcd_ex.c: ""
+            <virtual_root>/Drivers/STM32F4xx_HAL_Driver/stm32f4xx_ll_usb.c: ""
+            <virtual_root>/Application/User/USB_DEVICE/App/usb_device.c: ""
+            <virtual_root>/Application/User/USB_DEVICE/App/usbd_desc.c: ""
+            <virtual_root>/Application/User/USB_DEVICE/App/usbd_cdc_if.c: ""
+            <virtual_root>/Application/User/USB_DEVICE/Target/usbd_conf.c: ""
+            <virtual_root>/Middlewares/USB_Device_Library/usbd_core.c: ""
+            <virtual_root>/Middlewares/USB_Device_Library/usbd_ctlreq.c: ""
+            <virtual_root>/Middlewares/USB_Device_Library/usbd_ioreq.c: ""
+            <virtual_root>/Middlewares/USB_Device_Library/usbd_cdc.c: ""

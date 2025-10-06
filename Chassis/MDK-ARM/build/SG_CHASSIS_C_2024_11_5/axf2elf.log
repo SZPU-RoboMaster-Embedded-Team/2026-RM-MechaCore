@@ -1,0 +1,4 @@
+arm-none-eabi-objcopy --update-section ER_IROM1="C:\Users\25444\AppData\Local\Temp\\SG_CHASSIS_C_2024_11_5_h2dcvRiV.bin" "f:\H_SG\MDK-ARM\build\SG_CHASSIS_C_2024_11_5\SG_CHASSIS_C_2024_11_5.axf" "f:\H_SG\MDK-ARM\build\SG_CHASSIS_C_2024_11_5\SG_CHASSIS_C_2024_11_5.elf"
+
+arm-none-eabi-objcopy: f:\H_SG\MDK-ARM\build\SG_CHASSIS_C_2024_11_5\SG_CHASSIS_C_2024_11_5.elf: warning: allocated section `RW_IRAM1' not in segment
+

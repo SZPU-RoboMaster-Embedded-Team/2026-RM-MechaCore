@@ -1,0 +1,77 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.39.0.0
+Copyright (C) 2023 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: 1 2544405535@qq.com, 1, LIC=EXJT4-FFSPD-ARHXW-QW781-D0AQ7-R9NR5
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.39.0.0
+Toolchain Path:  D:\Keil_V5\ARM\ARMCLANG\Bin
+C Compiler:      ArmClang.exe V6.21
+Assembler:       Armasm.exe V6.21
+Linker/Locator:  ArmLink.exe V6.21
+Library Manager: ArmAr.exe V6.21
+Hex Converter:   FromElf.exe V6.21
+CPU DLL:         SARMCM3.DLL V5.39.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      CMSIS_AGDI.dll V1.33.16.0
+Dialog DLL:      TCM.DLL V1.56.4.0
+ 
+<h2>Project:</h2>
+F:\H_SG\MDK-ARM\SG_CHASSIS_C_2024_11_5.uvprojx
+Project File Date:  06/23/2025
+
+<h2>Output:</h2>
+*** Using Compiler 'V6.21', folder: 'D:\Keil_V5\ARM\ARMCLANG\Bin'
+Build target 'SG_CHASSIS_C_2024_11_5'
+compiling Init.cpp...
+User/APP/Variable.cpp(1): warning: In file included from...
+User/APP/Variable.hpp(12): warning: missing terminating '"' character [-Winvalid-pp-token]
+   12 | #include "alg_slope.h""
+      |                       ^
+User/APP/Variable.hpp(12): warning: extra tokens at end of #include directive [-Wextra-tokens]
+   12 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+User/APP/Variable.cpp(3): warning: missing terminating '"' character [-Winvalid-pp-token]
+    3 | #include "alg_slope.h""
+      |                       ^
+User/APP/Variable.cpp(3): warning: extra tokens at end of #include directive [-Wextra-tokens]
+    3 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+4 warnings generated.
+compiling Variable.cpp...
+linking...
+Program Size: Code=62592 RO-data=4740 RW-data=116 ZI-data=29108  
+FromELF: creating hex file...
+".\SG_CHASSIS_C_2024_11_5\SG_CHASSIS_C_2024_11_5.axf" - 0 Error(s), 4 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.5.9.0.pack
+                ARM::CMSIS@5.9.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 5.6.0
+
+Package Vendor: Keil
+                https://www.keil.com/pack/Keil.STM32F4xx_DFP.3.0.0.pack
+                Keil::STM32F4xx_DFP@3.0.0
+                STMicroelectronics STM32F4 Series Device Support
+
+<h2>Collection of Component include folders:</h2>
+  ./RTE/_SG_CHASSIS_C_2024_11_5
+  D:/Keil_V5/Pack/ARM/CMSIS/5.9.0/CMSIS/Core/Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE@5.6.0
+      Include file:  CMSIS/Core/Include/tz_context.h
+Build Time Elapsed:  00:00:03
+</pre>
+</body>
+</html>
