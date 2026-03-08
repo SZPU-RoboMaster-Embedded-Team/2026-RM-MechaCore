@@ -1,501 +1,382 @@
-# PID 控制器库
-
-## 概述
-
-这是一个功能完善的PID（比例-积分-微分）控制器库，实现了标准PID算法，并提供了积分限幅、积分隔离和积分抗饱和等高级功能。
-
-## 命名空间
-
-```cpp
-ALG::PID
-```
-
-## 主要特性
-
-- ✅ 标准PID控制算法
-- ✅ 输出限幅
-- ✅ 积分限幅（防止积分项过大）
-- ✅ 积分隔离（误差较大时停止积分）
-- ✅ 积分抗饱和（输出饱和时回退积分）
-- ✅ 完整的参数配置接口
-- ✅ 运行时参数可调
-
-## 快速开始
-
-### 基本使用
-
-```cpp
-#include "pid.hpp"
-
-// 创建PID控制器
-// 参数：kp, ki, kd, max_output
-ALG::PID::PID pid_controller(1.0f, 0.1f, 0.05f, 100.0f);
-
-// 设置目标值
-pid_controller.setTarget(1000.0f);
-
-// 在控制循环中调用
-float current_value = getSensorValue();  // 获取当前反馈值
-float control_output = pid_controller.Calc(current_value);
-
-// 使用控制输出
-// 设置要转动的电机的数据与ID号
-Motor6020.setCAN(control_output, ID);
-// 发送数据
-Motor6020.sendCAN(&can_motor);
-```
-
-## API 参考
-
-### 构造函数
-
-```cpp
-PID(float kp, float ki, float kd, float max)
-```
-
-**参数说明：**
-- `kp`: 比例增益
-- `ki`: 积分增益
-- `kd`: 微分增益
-- `max`: 输出限幅的最大值（最小值自动设为 -max）
-
-**示例：**
-```cpp
-ALG::PID::PID speed_pid(2.0f, 0.5f, 0.1f, 16000.0f);
-```
-
-### 核心方法
-
-#### `float Calc(float feedback)`
-
-计算PID控制输出。
-
-**参数：**
-- `feedback`: 当前反馈值
-
-**返回值：**
-- 计算得到的控制输出（已限幅）
-
-**示例：**
-```cpp
-float output = pid_controller.Calc(current_speed);
-```
-
-#### `void reset()`
-
-重置PID控制器状态，清除所有累积值和历史数据。
-
-**使用场景：**
-- 切换控制目标时
-- 系统重新启动时
-- 检测到异常需要重新开始时
-
-**示例：**
-```cpp
-pid_controller.reset();
-```
-
-### 配置方法
-
-#### `void setTarget(float target)`
-
-设置目标值。
-
-**示例：**
-```cpp
-pid_controller.setTarget(3000.0f);
-```
-
-#### `void setFeedback(float feedback)`
-
-直接设置反馈值（不进行计算）。
-
-**注意：** 通常不需要调用此方法，直接使用 `Calc()` 即可。
-
-#### `void setK(float kp, float ki, float kd)`
-
-运行时修改PID增益参数。
-
-**示例：**
-```cpp
-pid_controller.setK(1.5f, 0.2f, 0.08f);
-```
-
-#### `void setMax(float max)`
-
-设置输出限幅范围 [-max, max]。
-
-**示例：**
-```cpp
-pid_controller.setMax(10000.0f);
-```
-
-#### `void setIntegralLimit(float integral_limit)`
-
-设置积分项的限幅值。
-
-**作用：** 防止积分项累积过大，导致控制器响应迟缓。
-
-**示例：**
-```cpp
-pid_controller.setIntegralLimit(5000.0f);
-```
-
-#### `void setIntegralSeparation(float threshold)`
-
-设置积分隔离阈值。
-
-**作用：** 当误差大于阈值时，停止积分累积，仅使用PD控制。
-
-**特殊值：**
-- `threshold = 0`：禁用积分隔离功能，积分始终工作（默认行为）
-- `threshold > 0`：启用积分隔离，仅当误差小于阈值时才累积积分
-
-**使用场景：** 
-- 启动时误差很大，避免积分项过度累积
-- 快速响应阶段使用PD，精细调节阶段才使用积分
-
-**示例：**
-```cpp
-// 启用积分隔离
-pid_controller.setIntegralSeparation(200.0f);
-
-// 禁用积分隔离（积分始终工作）
-pid_controller.setIntegralSeparation(0.0f);
-```
-
-### 状态查询
-
-#### `float getOutput()`
-
-获取最近一次计算的输出值。
-
-**示例：**
-```cpp
-float last_output = pid_controller.getOutput();
-```
-
-#### `float getError()`
-
-获取最近一次计算的误差值。
-
-**示例：**
-```cpp
-float current_error = pid_controller.getError();
-```
-
-## 使用示例
-
-### 示例 1：基础电机速度控制
-
-```cpp
-#include "pid.hpp"
-
-// 创建速度环PID控制器
-ALG::PID::PID speed_pid(2.0f, 0.5f, 0.1f, 16000.0f);
-
-// 设置目标转速（RPM）
-speed_pid.setTarget(3000.0f);
-
-// 在周期性控制任务中（如1ms周期）
-void ControlTask()
-{
-    float current_speed = motor.getSpeed();
-    float output = speed_pid.Calc(current_speed);
-    motor.setVoltage(output);
-}
-```
-
-### 示例 2：带积分限幅和积分隔离的位置控制
-
-```cpp
-#include "pid.hpp"
-
-// 创建位置环PID控制器
-ALG::PID::PID position_pid(3.0f, 0.1f, 0.5f, 1000.0f);
-
-// 配置高级功能
-position_pid.setIntegralLimit(500.0f);        // 积分限幅
-position_pid.setIntegralSeparation(100.0f);   // 积分隔离阈值
-
-// 设置目标位置
-position_pid.setTarget(180.0f);  // 目标角度
-
-// 控制循环
-void ControlLoop()
-{
-    float current_angle = encoder.getAngle();
-    float output = position_pid.Calc(current_angle);
-    
-    // 检查误差是否在允许范围内
-    if (std::abs(position_pid.getError()) < 1.0f)
-    {
-        // 位置到达目标
-        motor.stop();
-    }
-    else
-    {
-        motor.setSpeed(output);
-    }
-}
-```
-
-### 示例 3：级联PID控制（位置环+速度环）
-
-```cpp
-#include "pid.hpp"
-
-// 外环：位置环
-ALG::PID::PID position_pid(5.0f, 0.0f, 0.8f, 500.0f);
-position_pid.setIntegralSeparation(50.0f);
-
-// 内环：速度环
-ALG::PID::PID speed_pid(2.0f, 0.5f, 0.1f, 16000.0f);
-speed_pid.setIntegralLimit(8000.0f);
-
-// 级联控制
-void CascadeControl()
-{
-    // 位置环计算，输出作为速度环的目标
-    float current_position = encoder.getPosition();
-    float target_speed = position_pid.Calc(current_position);
-    
-    // 速度环计算，输出作为电机控制量
-    speed_pid.setTarget(target_speed);
-    float current_speed = motor.getSpeed();
-    float output = speed_pid.Calc(current_speed);
-    
-    motor.setVoltage(output);
-}
-```
-
-### 示例 4：运行时参数调整
-
-```cpp
-#include "pid.hpp"
-
-ALG::PID::PID pid(1.0f, 0.1f, 0.05f, 100.0f);
-
-// 根据不同模式调整参数
-void SwitchMode(int mode)
-{
-    switch(mode)
-    {
-        case MODE_FAST:
-            // 快速响应模式：高增益
-            pid.setK(3.0f, 0.3f, 0.15f);
-            pid.setIntegralSeparation(100.0f);
-            break;
-            
-        case MODE_SMOOTH:
-            // 平滑模式：低增益
-            pid.setK(1.0f, 0.1f, 0.05f);
-            pid.setIntegralSeparation(20.0f);
-            break;
-            
-        case MODE_PRECISION:
-            // 精确模式：强积分
-            pid.setK(2.0f, 0.5f, 0.1f);
-            pid.setIntegralLimit(5000.0f);
-            break;
-    }
-    
-    // 切换模式时重置状态
-    pid.reset();
-}
-```
-
-## 重要注意事项
-
-### 1. 初始化顺序
-
-建议按以下顺序初始化PID控制器：
-
-```cpp
-ALG::PID::PID pid(kp, ki, kd, max_output);
-pid.setIntegralLimit(integral_limit);     // 可选
-pid.setIntegralSeparation(threshold);     // 可选
-pid.setTarget(target_value);
-```
-
-### 2. 积分隔离功能
-
-**默认行为：** 如果不设置 `setIntegralSeparation()` 或设置为 0，积分隔离功能**禁用**，积分项会始终工作。
-
-**工作模式：**
-- `threshold = 0`（默认）：积分始终累积，适合大部分应用场景
-- `threshold > 0`：启用积分隔离，仅当误差小于阈值时才累积积分
-
-**使用建议：**
-```cpp
-// 基本使用：积分始终工作（适合大多数场景）
-ALG::PID::PID pid(1.0f, 0.5f, 0.1f, 100.0f);
-// 默认积分隔离阈值为0，积分功能正常工作
-
-// 高级使用：启用积分隔离（用于大误差启动场景）
-ALG::PID::PID pid(1.0f, 0.5f, 0.1f, 100.0f);
-pid.setIntegralSeparation(50.0f);  // 仅当误差<50时才累积积分
-
-// 禁用积分功能的方法
-ALG::PID::PID pid(1.0f, 0.0f, 0.1f, 100.0f);  // 将ki设为0
-```
-
-### 3. 控制周期
-
-- PID控制器应该在**固定周期**内调用 `Calc()` 方法
-- 如果控制周期不固定，建议使用**增量式PID**或在计算中加入时间因子
-
-### 4. 参数调试建议
-
-**调参步骤（Ziegler-Nichols方法的变体）：**
-
-1. **设置初始参数**
-   ```cpp
-   pid.setK(0.0f, 0.0f, 0.0f);
-   ```
-
-2. **调整比例项（P）**
-   - 逐渐增加 `kp`，直到系统出现持续振荡
-   - 将 `kp` 降低到振荡消失值的 50%-70%
-
-3. **调整积分项（I）**
-   - 默认情况下积分始终工作，无需设置积分隔离阈值
-   - 从小值开始增加 `ki`，消除稳态误差
-   - 如果出现超调，减小 `ki`
-   - 如果启动时误差很大导致积分过度累积，可考虑启用积分隔离
-
-4. **调整微分项（D）**
-   - 增加 `kd` 来减小超调和振荡
-   - 注意：过大的 `kd` 会导致系统对噪声敏感
-
-5. **设置限幅**
-   - 输出限幅：根据执行器的最大输出能力
-   - 积分限幅：通常设为输出限幅的50%-80%
-
-### 5. 积分抗饱和机制
-
-本库实现了**积分抗饱和**功能：
-- 当输出达到限幅且误差继续增大时，会自动回退积分累积
-- 这可以防止积分饱和导致的系统响应迟缓
-- **无需手动处理**，库会自动管理
-
-### 6. 重置时机
-
-在以下情况应调用 `reset()`：
-- 切换控制目标时
-- 控制器启动/停止时
-- 检测到传感器异常后恢复时
-- 系统模式切换时
-
-### 7. 线程安全
-
-⚠️ 此PID库**不是线程安全的**。如果在多线程环境中使用：
-- 为每个线程创建独立的PID实例，或
-- 使用互斥锁保护PID对象的访问
-
-### 8. 数值精度
-
-- 所有参数使用 `float` 类型（32位浮点数）
-- 对于高精度应用，可以考虑修改为 `double` 类型
-- 注意累积误差，必要时定期重置积分项
-
-## 故障排查
-
-### 问题：系统响应缓慢
-
-**可能原因：**
-- `kp` 值过小
-- 积分隔离阈值设置过小，积分未生效
-- 输出限幅过小
-
-**解决方案：**
-```cpp
-// 增加比例增益
-pid.setK(higher_kp, ki, kd);
-
-// 增大积分隔离阈值
-pid.setIntegralSeparation(larger_threshold);
-```
-
-### 问题：系统振荡
-
-**可能原因：**
-- `kp` 或 `kd` 过大
-- 控制周期不稳定
-
-**解决方案：**
-```cpp
-// 降低增益
-pid.setK(lower_kp, ki, lower_kd);
-
-// 增加微分项（如果振荡是由比例项引起的）
-pid.setK(kp, ki, higher_kd);
-```
-
-### 问题：存在稳态误差
-
-**可能原因：**
-- `ki` 值过小或为0
-- 积分限幅过小
-
-**解决方案：**
-```cpp
-// 增加积分增益
-pid.setK(kp, higher_ki, kd);
-
-// 增大积分限幅
-pid.setIntegralLimit(larger_limit);
-
-// 如果启用了积分隔离，检查阈值是否过小
-// pid.setIntegralSeparation(larger_threshold);
-```
-
-### 问题：超调严重
-
-**可能原因：**
-- `ki` 过大
-- 积分限幅过大
-- 缺少微分项
-
-**解决方案：**
-```cpp
-// 减小积分增益
-pid.setK(kp, lower_ki, kd);
-
-// 添加或增加微分增益
-pid.setK(kp, ki, higher_kd);
-
-// 减小积分限幅
-pid.setIntegralLimit(smaller_limit);
-```
-
-## 性能特性
-
-- **计算复杂度：** O(1)
-- **内存占用：** 约60字节（15个float成员变量）
-- **执行时间：** < 1μs（在典型的ARM Cortex-M4 @ 168MHz上）
-
-## 依赖项
-
-```cpp
-#include <algorithm>  // for std::clamp
-#include <cmath>      // for std::abs
-```
-
-## 许可证
-
-请参考项目根目录的许可证文件。
-
-## 版本历史
-
-- **v1.0** - 初始版本，包含基本PID功能
-- **当前版本** - 添加积分限幅、积分隔离和积分抗饱和功能
-
-## 贡献与反馈
-
-如有问题或建议，请提交Issue或Pull Request。
+# PID - PID 控制器
+
+> 📚 **前置知识**：理解什么是反馈控制
+>
+> PID 是机器人控制中最基础、最常用的算法！必须掌握！
 
 ---
 
-**最后更新：** 2025-10-19
+## 🎯 什么是 PID？
+
+### 生活中的例子
+
+想象你在淋浴：
+
+- **目标**：水温 40°C
+- **反馈**：你的皮肤感受到当前水温
+- **控制**：转动水龙头
+
+你是怎么调节的？
+
+1. **P（比例）**：水太冷，就多开热水；水太热，就关热水。差距越大，调节越猛
+2. **I（积分）**：水一直偏冷一点点，说明之前的调节不够，需要累积误差继续调
+3. **D（微分）**：水温在快速上升，提前减小热水，防止超调
+
+这就是 PID 的核心思想！
+
+### 公式
+
+```
+输出 = Kp × 误差 + Ki × 误差积分 + Kd × 误差变化率
+
+其中：
+- 误差 = 目标值 - 当前值
+- Kp, Ki, Kd 是需要调节的参数
+```
+
+---
+
+## 📦 这个模块提供什么？
+
+一个功能完整的 PID 控制器类，包含：
+
+- **基本 PID 计算**
+- **输出限幅**：防止输出过大损坏电机
+- **积分限幅**：防止积分饱和（积分值太大）
+- **积分分离**：误差大时不积分，防止超调
+
+---
+
+## 🔧 API 详解
+
+### 创建 PID 控制器
+
+```cpp
+#include "Alg/PID/pid.hpp"
+
+// 构造函数参数说明：
+// PID(Kp, Ki, Kd, 输出限幅, 积分限幅, 积分分离阈值)
+
+ALG::PID::PID my_pid(
+    10.0f,    // Kp: 比例系数
+    0.1f,     // Ki: 积分系数
+    0.5f,     // Kd: 微分系数
+    10000.0f, // 输出限幅: 输出不超过 ±10000
+    5000.0f,  // 积分限幅: 积分项不超过 ±5000
+    500.0f    // 积分分离: 误差 > 500 时不积分
+);
+```
+
+### 进行 PID 计算
+
+```cpp
+// 每个控制周期调用一次（比如每 1ms）
+float output = my_pid.UpDate(目标值, 当前值);
+```
+
+就这么简单！`output` 就是你要发给电机的控制量。
+
+### 其他常用函数
+
+```cpp
+// 重置PID（切换目标时建议重置）
+my_pid.reset();
+
+// 单独设置目标和反馈（不常用）
+my_pid.setTarget(1000.0f);
+my_pid.setFeedback(800.0f);
+
+// 修改PID参数
+my_pid.setK(12.0f, 0.15f, 0.6f);
+
+// 修改输出限幅
+my_pid.setMax(8000.0f);
+
+// 获取当前输出
+float current_output = my_pid.getOutput();
+
+// 获取当前误差
+float current_error = my_pid.getError();
+```
+
+---
+
+## 📖 详细使用教程
+
+### 场景一：电机速度控制
+
+最常见的应用！目标是让电机保持某个转速。
+
+```cpp
+#include "Alg/PID/pid.hpp"
+#include "BSP/Motor/Dji/DjiMotor.hpp"
+
+// 创建 PID 控制器
+// 速度环一般 Kp 较大，Ki 较小，Kd 可以为 0
+ALG::PID::PID speed_pid(15.0f, 0.5f, 0.0f, 10000.0f, 5000.0f, 1000.0f);
+
+// 目标速度（rpm）
+float target_speed = 2000.0f;
+
+// 控制任务（1ms 周期）
+void SpeedControlTask()
+{
+    // 1. 获取当前速度
+    float current_speed = chassis_motor.getVelocityRpm(1);
+
+    // 2. PID 计算
+    float output = speed_pid.UpDate(target_speed, current_speed);
+
+    // 3. 发送到电机
+    int16_t current[4] = {(int16_t)output, 0, 0, 0};
+    chassis_motor.SendCommand(current);
+}
+```
+
+### 场景二：电机位置控制（串级 PID）
+
+位置控制需要用**两个 PID**串联：
+
+- **外环（位置环）**：输入目标角度，输出目标速度
+- **内环（速度环）**：输入目标速度，输出电流
+
+```
+目标角度 → [位置PID] → 目标速度 → [速度PID] → 电流 → 电机
+                ↑                      ↑
+            当前角度                当前速度
+```
+
+```cpp
+// 位置环 PID（外环，较慢）
+ALG::PID::PID pos_pid(5.0f, 0.01f, 0.5f, 5000.0f, 1000.0f, 100.0f);
+
+// 速度环 PID（内环，较快）
+ALG::PID::PID speed_pid(15.0f, 0.5f, 0.0f, 10000.0f, 5000.0f, 1000.0f);
+
+float target_angle = 90.0f;  // 目标角度（度）
+
+void PositionControlTask()
+{
+    // 1. 获取当前角度和速度
+    float current_angle = motor.getAngleDeg(1);
+    float current_speed = motor.getVelocityRpm(1);
+
+    // 2. 位置环计算 → 得到目标速度
+    float target_speed = pos_pid.UpDate(target_angle, current_angle);
+
+    // 3. 速度环计算 → 得到电流
+    float output = speed_pid.UpDate(target_speed, current_speed);
+
+    // 4. 发送电流
+    int16_t current[1] = {(int16_t)output};
+    motor.SendCommand(current);
+}
+```
+
+### 场景三：多电机独立控制
+
+每个电机需要**独立的 PID 控制器**！
+
+```cpp
+// 4 个电机，4 个 PID
+ALG::PID::PID motor_pid[4] = {
+    {10.0f, 0.1f, 0.5f, 10000.0f, 5000.0f, 500.0f},
+    {10.0f, 0.1f, 0.5f, 10000.0f, 5000.0f, 500.0f},
+    {10.0f, 0.1f, 0.5f, 10000.0f, 5000.0f, 500.0f},
+    {10.0f, 0.1f, 0.5f, 10000.0f, 5000.0f, 500.0f}
+};
+
+float target[4] = {1000, 1000, 1000, 1000};  // 各电机目标转速
+
+void MultiMotorControl()
+{
+    int16_t current[4];
+
+    for (int i = 0; i < 4; i++)
+    {
+        float cur_speed = chassis_motor.getVelocityRpm(i + 1);
+        float output = motor_pid[i].UpDate(target[i], cur_speed);
+        current[i] = (int16_t)output;
+    }
+
+    chassis_motor.SendCommand(current);
+}
+```
+
+---
+
+## 🎛️ PID 参数调节指南
+
+### 调参步骤（黄金法则）
+
+1. **先把 Ki 和 Kd 设为 0**
+
+   ```cpp
+   my_pid.setK(10.0f, 0.0f, 0.0f);  // 只有 P
+   ```
+
+2. **逐渐增大 Kp**
+   - 从小值开始（比如 1.0）
+   - 观察响应，逐渐增大
+   - 直到系统开始**振荡**（来回抖动）
+
+3. **减小 Kp 到约 60%**
+   
+- 如果振荡时 Kp = 20，就设为 12 左右
+   
+4. **加入 Ki 消除稳态误差**
+   - 如果系统稳定后还有一点偏差，就加 Ki
+   - 从很小的值开始（比如 0.01）
+   - 不要加太大，否则会超调
+
+5. **如果需要，加入 Kd**
+   - Kd 可以抑制超调，让响应更快收敛
+   - 但太大会放大噪声
+
+### 常见问题及解决
+
+| 现象             | 可能原因          | 解决方法         |
+| ---------------- | ----------------- | ---------------- |
+| 不动             | Kp 太小           | 增大 Kp          |
+| 振荡             | Kp 太大           | 减小 Kp          |
+| 稳态有误差       | Ki 太小或没有     | 增大 Ki          |
+| 超调严重         | Ki 太大或 Kd 太小 | 减小 Ki，增大 Kd |
+| 响应太慢         | Kp 太小           | 增大 Kp          |
+| 抖动（高频振荡） | Kd 太大           | 减小 Kd          |
+
+### 不同场景的参数特点
+
+| 场景   | Kp  | Ki   | Kd    | 说明     |
+| ------ | --- | ---- | ----- | -------- |
+| 速度环 | 大  | 小   | 小或0 | 快速响应 |
+| 位置环 | 中  | 很小 | 中    | 精确控制 |
+| 角度环 | 中  | 小   | 较大  | 防止超调 |
+
+---
+
+## ⚙️ 高级功能解释
+
+### 输出限幅
+
+防止 PID 输出过大损坏电机或超出控制范围。
+
+```cpp
+// 设置输出限幅为 ±8000
+my_pid.setMax(8000.0f);
+
+// 即使 PID 计算出 12000，也会被限制到 8000
+```
+
+### 积分限幅
+
+防止**积分饱和**（Integral Windup）。
+
+什么是积分饱和？当目标突然变化很大时，误差会持续累积，导致积分项变得很大，然后过冲很久才能恢复。
+
+```cpp
+// 积分项的绝对值不会超过 5000
+PID my_pid(10, 0.1f, 0, 10000, 5000, 500);
+//                            ↑
+//                        积分限幅
+```
+
+### 积分分离
+
+误差很大时不进行积分，只有误差较小时才积分。
+
+```cpp
+// 误差 > 500 时不积分
+PID my_pid(10, 0.1f, 0, 10000, 5000, 500);
+//                                   ↑
+//                              积分分离阈值
+```
+
+---
+
+## 🔍 调试技巧
+
+### 使用 LOGGER 打印
+
+```cpp
+#include "HAL/LOGGER/logger.hpp"
+
+void DebugPID()
+{
+    float target = 1000.0f;
+    float current = motor.getVelocityRpm(1);
+    float output = my_pid.UpDate(target, current);
+
+    // 打印调试信息
+    LOG_INFO("T:%.1f C:%.1f E:%.1f O:%.1f",
+             target, current, my_pid.getError(), output);
+}
+```
+
+### 使用上位机
+
+可以把数据发到上位机绘制曲线，直观看到响应过程。
+
+---
+
+## ⚠️ 常见错误
+
+### 错误 1：忘记调用 UpDate()
+
+```cpp
+// 错误：只设置了目标，没有计算
+my_pid.setTarget(1000);
+// 这样 getOutput() 还是旧值！
+
+// 正确：调用 UpDate()
+float output = my_pid.UpDate(1000, current_speed);
+```
+
+### 错误 2：只用一个 PID 控制多个电机
+
+```cpp
+// 错误：4 个电机共用一个 PID
+PID shared_pid(10, 0.1f, 0.5f, 10000, 5000, 500);
+for (int i = 0; i < 4; i++) {
+    shared_pid.UpDate(target[i], speed[i]);  // 积分项会乱！
+}
+
+// 正确：每个电机独立的 PID
+PID motor_pid[4] = {...};
+```
+
+### 错误 3：控制周期不固定
+
+PID 对控制周期敏感，如果周期不固定，效果会很差。
+
+```cpp
+// 确保控制任务以固定周期运行
+// 通常用定时器中断，1ms 周期
+```
+
+## 调用示例
+
+### 初始化
+
+```cpp
+// 第一个数据kp 第二个ki 第三个kd 第四个最大输出 第五个积分限幅 第六个积分隔离阈值
+// 创建数组的
+ALG::PID::PID translational_pid[2] = {
+    ALG::PID::PID(300.0f, 0.0f, 0.0f, 16384.0f, 2500.0f, 100.0f),
+    ALG::PID::PID(300.0f, 0.0f, 0.0f, 16384.0f, 2500.0f, 100.0f)
+};
+// 创建单个
+ALG::PID::PID rotational_pid(200.0f, 0.0f, 0.0f, 16384.0f, 2500.0f, 100.0f);
+```
+
+### 调用
+
+```cpp
+// 重置 都置为0
+translational_pid[0].reset();
+translational_pid[1].reset();
+rotational_pid.reset();
+
+// 计算 期望和反馈
+translational_pid[0].UpDate(chassis_target.target_translation_x, string_fk.GetChassisVx()); 
+```
 

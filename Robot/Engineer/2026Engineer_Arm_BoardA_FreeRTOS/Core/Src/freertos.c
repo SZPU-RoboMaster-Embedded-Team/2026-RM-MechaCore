@@ -59,21 +59,35 @@ osThreadId_t remotetaskHandle;
 const osThreadAttr_t remotetask_attributes = {
   .name = "remotetask",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh7,
+  .priority = (osPriority_t) osPriorityHigh6,
 };
 /* Definitions for armcontrol */
 osThreadId_t armcontrolHandle;
 const osThreadAttr_t armcontrol_attributes = {
   .name = "armcontrol",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityRealtime1,
 };
 /* Definitions for uartcom */
 osThreadId_t uartcomHandle;
 const osThreadAttr_t uartcom_attributes = {
   .name = "uartcom",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh6,
+  .priority = (osPriority_t) osPriorityHigh5,
+};
+/* Definitions for refereetask */
+osThreadId_t refereetaskHandle;
+const osThreadAttr_t refereetask_attributes = {
+  .name = "refereetask",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityHigh7,
+};
+/* Definitions for motortask */
+osThreadId_t motortaskHandle;
+const osThreadAttr_t motortask_attributes = {
+  .name = "motortask",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,6 +99,8 @@ void StartDefaultTask(void *argument);
 extern void RemoteTask(void *argument);
 extern void ArmControl(void *argument);
 extern void UartCom(void *argument);
+extern void RefereeTask(void *argument);
+extern void MotorTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -126,6 +142,12 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of uartcom */
   uartcomHandle = osThreadNew(UartCom, NULL, &uartcom_attributes);
+
+  /* creation of refereetask */
+  refereetaskHandle = osThreadNew(RefereeTask, NULL, &refereetask_attributes);
+
+  /* creation of motortask */
+  motortaskHandle = osThreadNew(MotorTask, NULL, &motortask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */

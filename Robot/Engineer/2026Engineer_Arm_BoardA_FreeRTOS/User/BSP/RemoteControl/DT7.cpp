@@ -52,17 +52,18 @@ void RemoteController::parseData(const uint8_t *data)
     channels_.s2 = extractBits(data, 46, 2);
     
     // 摇杆原始坐标（以中值为中心，范围为-660~660）
-    coordinates_.left_stick_x = channels_.ch2 - CHANNEL_VALUE_MID;
-    coordinates_.left_stick_y = channels_.ch3 - CHANNEL_VALUE_MID;
-    coordinates_.right_stick_x = channels_.ch0 - CHANNEL_VALUE_MID;
-    coordinates_.right_stick_y = channels_.ch1 - CHANNEL_VALUE_MID;
+    coordinates_.left_stick_x = DeadzoneCompensation(channels_.ch2 - CHANNEL_VALUE_MID);
+    coordinates_.left_stick_y = DeadzoneCompensation(channels_.ch3 - CHANNEL_VALUE_MID);
+    coordinates_.right_stick_x = DeadzoneCompensation(channels_.ch0 - CHANNEL_VALUE_MID);
+    coordinates_.right_stick_y = DeadzoneCompensation(channels_.ch1 - CHANNEL_VALUE_MID);
+    coordinates_.scroll = DeadzoneCompensation(channels_.scroll - CHANNEL_VALUE_MID);
 
     // 摇杆位置（归一化到 -1.0~1.0，分别赋值四个轴）
     stick_position_.left_x = discreteAxis(coordinates_.left_stick_x, 0);
     stick_position_.left_y = discreteAxis(coordinates_.left_stick_y, 0);
     stick_position_.right_x = discreteAxis(coordinates_.right_stick_x, 0);
     stick_position_.right_y = discreteAxis(coordinates_.right_stick_y, 0);
-    stick_position_.scroll = discreteAxis(channels_.scroll, 0);
+    stick_position_.scroll = discreteAxis(coordinates_.scroll, 0);
 
 
     // 鼠标（按字节组合）

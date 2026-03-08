@@ -48,16 +48,35 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
         }
     }
     
-    if(huart->Instance == USART6)
+    if(huart->Instance == UART8)
     {
-        HAL::UART::Data com_rx_data{com_rx_buffer, 20};
-        auto &uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
-
-        if(huart == uart6.get_handle())
+        if (g_protocol_manager)
         {
-            uart6.receive_dma_idle(com_rx_data);
-            uart6.trigger_rx_callbacks(com_rx_data);
-            uart6.clear_ore_error(com_rx_data);
+            g_protocol_manager->on_rx_complete(Size);
+        }
+    }
+}
+
+extern "C" void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == UART8 && g_protocol_manager)
+    {
+        g_protocol_manager->on_tx_complete();
+    }
+}
+
+extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == UART8)
+    {
+        // 清除错误标志，防止串口假死
+        __HAL_UART_CLEAR_OREFLAG(huart);
+        __HAL_UART_CLEAR_NEFLAG(huart);
+        __HAL_UART_CLEAR_FEFLAG(huart);
+
+        if (g_protocol_manager)
+        {
+            g_protocol_manager->on_error();
         }
     }
 }

@@ -17,46 +17,11 @@ void RemoteInit()
 }
 void RemoteTask(void *argument)
 {
+    TickType_t Lasttick = xTaskGetTickCount();
+
     RemoteInit();
     for(;;)
     {
-        Remote_Check();
-        osDelay(5);
+        vTaskDelayUntil(&Lasttick, pdMS_TO_TICKS(5));
     }
-}
-
-void Remote_Check()
-{
-    uint8_t pre_tick;
-    uint8_t cur_tick = HAL_GetTick();
-    uint16_t tick_err = cur_tick - pre_tick;
-
-    if(DT7.get_s2() == 1)
-    {
-        switch (DT7.get_s1())
-        {
-            case 1:
-                Motor4310P.On(&hcan1,1);
-                Motor4310P.On(&hcan1,2);
-                Motor4340P.On(&hcan1,1);
-                Motor4340P.On(&hcan1,2);
-                Motor8009P.On(&hcan1,1);
-                Motor8009P.On(&hcan1,2);
-                Motor8009P.On(&hcan1,3);
-                break;
-            default:
-                break;
-        }
-    }
-    else if(DT7.get_s2() != 1 || tick_err > 100)
-    {
-        Motor4310P.On(&hcan1,1);
-                Motor4310P.Off(&hcan1,2);
-                Motor4340P.Off(&hcan1,1);
-                Motor4340P.Off(&hcan1,2);
-                Motor8009P.Off(&hcan1,1);
-                Motor8009P.Off(&hcan1,2);
-                Motor8009P.Off(&hcan1,3);
-    }
-    pre_tick = cur_tick;
 }

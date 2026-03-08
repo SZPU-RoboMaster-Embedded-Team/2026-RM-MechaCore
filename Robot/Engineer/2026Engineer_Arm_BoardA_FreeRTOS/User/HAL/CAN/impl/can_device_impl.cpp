@@ -31,10 +31,19 @@ void CanDevice::start()
 
 bool CanDevice::send(const Frame &frame)
 {
-    if (HAL_CAN_GetTxMailboxesFreeLevel(handle_) == 0)
+    // 增加超时死循环等待，等待前面的数据发出去腾出邮箱
+    uint16_t timeout = 0xFFFF;
+    while (HAL_CAN_GetTxMailboxesFreeLevel(handle_) == 0)
     {
-        return false;
+        if (--timeout == 0)
+        {
+            return false; // 等待超时再放弃，防止死机
+        }
     }
+    // if (HAL_CAN_GetTxMailboxesFreeLevel(handle_) == 0)
+    // {
+    //     return false;
+    // }
 
     CAN_TxHeaderTypeDef tx_header;
     tx_header.DLC = frame.dlc;

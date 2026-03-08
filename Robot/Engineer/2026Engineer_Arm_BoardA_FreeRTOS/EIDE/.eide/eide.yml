@@ -26,6 +26,7 @@ virtualFolder:
                 - path: ../Core/Src/freertos.c
                 - path: ../Core/Src/can.c
                 - path: ../Core/Src/dma.c
+                - path: ../Core/Src/tim.c
                 - path: ../Core/Src/usart.c
                 - path: ../Core/Src/stm32f4xx_it.c
                 - path: ../Core/Src/stm32f4xx_hal_msp.c
@@ -77,16 +78,19 @@ virtualFolder:
     - name: Alg
       files:
         - path: ../User/Alg/PID/pid.cpp
+        - path: ../User/Alg/Filter/Filter.cpp
       folders: []
     - name: App
       files: []
       folders: []
     - name: BSP
       files:
+        - path: ../User/BSP/Common/StateWatch/buzzer_manager.cpp
         - path: ../User/BSP/Common/StateWatch/state_watch.cpp
-        - path: ../User/BSP/Motor/MotorBase.hpp
         - path: ../User/BSP/Motor/DM/DmMotor.hpp
+        - path: ../User/BSP/Motor/MotorBase.hpp
         - path: ../User/BSP/RemoteControl/DT7.cpp
+        - path: ../User/BSP/SimpleKey/SimpleKey.hpp
       folders: []
     - name: HAL
       files:
@@ -100,6 +104,14 @@ virtualFolder:
         - path: ../User/HAL/UART/interface/uart_bus.cpp
         - path: ../User/HAL/UART/interface/uart_device.hpp
         - path: ../User/HAL/UART/uart_hal.hpp
+        - path: ../User/HAL/UART/protocol_hal.hpp
+        - path: ../User/HAL/UART/protocol/fifo_buffer.hpp
+        - path: ../User/HAL/UART/protocol/protocol_builder.hpp
+        - path: ../User/HAL/UART/protocol/protocol_packet.hpp
+        - path: ../User/HAL/UART/protocol/protocol_parser.hpp
+        - path: ../User/HAL/UART/protocol/protocol_processor.hpp
+        - path: ../User/HAL/UART/protocol/protocol_rx_manager.cpp
+        - path: ../User/HAL/UART/protocol/protocol_tx_manager.cpp
       folders: []
     - name: Task
       files:
@@ -107,6 +119,8 @@ virtualFolder:
         - path: ../User/Task/Callback.cpp
         - path: ../User/Task/RemoteTask.cpp
         - path: ../User/Task/UartCom.cpp
+        - path: ../User/Task/MotorTask.cpp
+        - path: ../User/Task/RefereeTask.cpp
       folders: []
     - name: ::CMSIS
       files: []
@@ -242,8 +256,8 @@ targets:
         baseAddr: ""
         bin: ""
         cpuInfo:
-          cpuName: "null"
-          vendor: "null"
+          cpuName: STM32F427II
+          vendor: ST
         otherCmds: ""
         proType: 1
         speed: 8000
@@ -252,4 +266,4 @@ targets:
         bin: ""
         interface: cmsis-dap
         target: stm32f4x
-    uploader: OpenOCD
+    uploader: JLink

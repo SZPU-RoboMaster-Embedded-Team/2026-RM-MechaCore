@@ -6,16 +6,52 @@
 #include <memory>
 #include <string>
 
-#include "BSP/RemoteControl/DT7.hpp"
+#include "RemoteTask.hpp"
 #include "BSP/Motor/DM/DmMotor.hpp"
 #include "Alg/PID/pid.hpp"
+#include "BSP/Common/StateWatch/buzzer_manager.hpp"
+#include "Alg/Filter/Filter.hpp"
+#include "HAL/DWT/DWT.hpp"
 #include "UartCom.hpp"
 #include "can.h"
 #include "cmsis_os2.h"
 
+extern BSP::Motor::DM::J4310<1> Motor4310;
 extern BSP::Motor::DM::J4310P<2> Motor4310P;
 extern BSP::Motor::DM::J4340P<2> Motor4340P;
 extern BSP::Motor::DM::J8009P<3> Motor8009P;
+
+extern CAN_HandleTypeDef hcan1;
+extern CAN_HandleTypeDef hcan2;
+
+class dm_pid_param
+{
+public:
+    void SetKp(float input)
+    {
+        this->kp = input; 
+    }
+    void SetKd(float input)
+    {
+        this->kd = input;
+    }
+    float GetKp()
+    {
+        return this->kp;
+    }
+    float GetKd()
+    {
+        return this->kd;
+    }
+private:
+   float kp;
+   float ki;
+   float kd;
+   float output;
+   float error;
+};
+
+float getError(float ref,float tar);
 
 namespace TASK::ARM
 {
@@ -23,50 +59,54 @@ namespace TASK::ARM
     {
         public:
             Arm();
-            void Motor_Init();
+            bool check_online();
             void update();
-            void Disconnect_Handle();
-            void vofa_init();
-            void vofa_send(float x1, float x2, float x3, float x4, float x5, float x6);
+            void Joint_data_Get();
+            void JointControl();
+            void Jointinit();
             float getJoint(int num)
             {
-                return joint_feedback_data[num - 1];
+                return joint_feedback_data[num];
             }
+
+            float getTorque(int num)
+            {
+                return torque_feedback_data[num];
+            }
+
+            float getSpeed(int num)
+            {
+                return speed_feedback_data[num];
+            }
+
+            float kp_j1 = 0.0f;
+            float kp_j2 = 0.0f;
+            float kp_j3 = 0.0f;
+            float kp_j4 = 0.0f;
+            float kp_j5 = 0.0f;
+            float kp_j6 = 0.0f;
+            float kp_j7 = 0.0f;
+            
         private:
-            void Upstate();
-            void JointControl();
-            void Disconnect();
+            void EndPose_data_Get();
+            float joint_feedback_data[7] = {0};
 
-            uint32_t task_tick;
+            float torque_feedback_data[7] = {0};
 
-            double angle_target;
-            double angle_feedback;
-            double reset_angle;
-            double cur_angle;
-            double get_angle;
-
-            float joint1_target = 0.0;
-            float joint2_target = 0.0;
-            float joint3_target = 0.0;
-            float joint4_target = 0.0;
-            float joint5_target = 0.0;
-            float joint6_target = 0.0;
-            float joint7_target = 0.0;
-
-            float joint1_feedback = 0.0;
-            float joint2_feedback = 0.0;
-            float joint3_feedback = 0.0;
-            float joint4_feedback = 0.0;
-            float joint5_feedback = 0.0;
-            float joint6_feedback = 0.0;
-            float joint7_feedback = 0.0;
-
-            float joint_feedback_data[7] = {joint1_feedback,joint2_feedback,joint3_feedback,joint4_feedback,joint5_feedback,joint6_feedback,joint7_feedback};
+            float speed_feedback_data[7] = {0};
     };
 
     inline Arm arm;
 
 }// namespace TASK::SLAVE_ARM
+
+extern dm_pid_param pid_joint1;
+extern dm_pid_param pid_joint2;
+extern dm_pid_param pid_joint3;
+extern dm_pid_param pid_joint4;
+extern dm_pid_param pid_joint5;
+extern dm_pid_param pid_joint6;
+extern dm_pid_param pid_joint7;
 
 // 将RTOS任务引至.c文件
 #ifdef __cplusplus

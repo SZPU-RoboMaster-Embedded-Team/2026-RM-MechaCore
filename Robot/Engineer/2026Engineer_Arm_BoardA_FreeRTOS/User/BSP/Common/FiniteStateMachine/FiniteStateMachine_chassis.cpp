@@ -24,7 +24,7 @@ static const char* State_Names[STATUS_COUNT] = {
 /**
  * @brief 状态机初始化
  */
-void Class_FSM::Init()
+void Chassis_FSM::Init()
 {
     // 初始化所有状态
     for (int i = 0; i < STATUS_COUNT; i++)
@@ -41,8 +41,9 @@ void Class_FSM::Init()
     Status[STOP].Enter_Count = 1;
     
     // 初始化开关状态
-    StateLeft = 0;
-    StateRight = 0;
+    StateLeft = 2;
+    StateRight = 2;
+    EquipmentOnline = false;
 }
 
 /**
@@ -50,11 +51,13 @@ void Class_FSM::Init()
  *
  * @param left 左开关状态
  * @param right 右开关状态
+ * @param equipment_online 所有设备是否在线
  */
-void Class_FSM::SetState(uint8_t left, uint8_t right)
+void Chassis_FSM::SetState(uint8_t left, uint8_t right, bool equipment_online)
 {
     StateLeft = left;
     StateRight = right;
+    EquipmentOnline = equipment_online;
 }
 
 /**
@@ -62,29 +65,30 @@ void Class_FSM::SetState(uint8_t left, uint8_t right)
  *
  * @param left 左开关状态
  * @param right 右开关状态
+ * @param equipment_online 所有设备是否在线
  */
-void Class_FSM::StateUpdate(uint8_t left, uint8_t right)
+void Chassis_FSM::StateUpdate(uint8_t left, uint8_t right, bool equipment_online)
 {
     // 保存旧状态用于统计
     Enum_Chassis_States old_state = State_chassis;
     
     // 设置当前开关状态
-    SetState(left, right);
+    SetState(left, right, equipment_online);
     
     // 根据开关状态组合确定底盘状态
-    if (StateLeft == 2 && StateRight == 2)
+    if (StateLeft == 2 && StateRight == 2 || equipment_online == false)
     {
         State_chassis = STOP;
     }
     else if (StateLeft == 3 && StateRight == 2)
     {
-        State_chassis = NOTFOLLOW;
+        State_chassis = FOLLOW;
     }
     else if (StateLeft == 2 && StateRight == 3)
     {
-        State_chassis = FOLLOW;
+        State_chassis = NOTFOLLOW;
     }
-    else if(StateLeft == 1 && StateRight == 1)
+    else if(StateLeft == 3 && StateRight == 3)
     {
         State_chassis = KEYBOARD;
     }
@@ -104,7 +108,7 @@ void Class_FSM::StateUpdate(uint8_t left, uint8_t right)
 /**
  * @brief 定时更新函数（用于时间统计）
  */
-void Class_FSM::TIM_Update()
+void Chassis_FSM::TIM_Update()
 {
     // 更新当前状态的运行时间
     State_Run_Time[State_chassis]++;
@@ -116,7 +120,7 @@ void Class_FSM::TIM_Update()
  * @param state 状态
  * @return uint32_t 运行时间
  */
-uint32_t Class_FSM::Get_State_Run_Time(Enum_Chassis_States state)
+uint32_t Chassis_FSM::Get_State_Run_Time(Enum_Chassis_States state)
 {
     if (state < STOP || state >= STATUS_COUNT) {
         return 0;
@@ -135,7 +139,7 @@ uint32_t Class_FSM::Get_State_Run_Time(Enum_Chassis_States state)
  * @param state 状态
  * @return uint32_t 进入次数
  */
-uint32_t Class_FSM::Get_State_Enter_Count(Enum_Chassis_States state)
+uint32_t Chassis_FSM::Get_State_Enter_Count(Enum_Chassis_States state)
 {
     if (state < STOP || state >= STATUS_COUNT) {
         return 0;
@@ -148,7 +152,7 @@ uint32_t Class_FSM::Get_State_Enter_Count(Enum_Chassis_States state)
  *
  * @param state 状态
  */
-void Class_FSM::Reset_State_Statistics(Enum_Chassis_States state)
+void Chassis_FSM::Reset_State_Statistics(Enum_Chassis_States state)
 {
     if (state < STOP || state >= STATUS_COUNT) {
         return;

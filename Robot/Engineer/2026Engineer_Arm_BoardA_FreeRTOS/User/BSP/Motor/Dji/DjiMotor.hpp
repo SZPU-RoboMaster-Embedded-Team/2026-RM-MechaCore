@@ -1,11 +1,10 @@
 #ifndef DJI_MOTOR_HPP
 #define DJI_MOTOR_HPP
-//1111fix：修复上传错误
+
 #pragma once
 // 基础DJI电机实现
-#include "../MotorBase.hpp"
+#include "BSP/Motor/MotorBase.hpp"
 #include "BSP/Common/StateWatch/state_watch.hpp"
-#include "HAL/CAN/can_hal.hpp"
 #include "can.h"
 #include <cstdint>
 #include <cstring> // 添加头文件
@@ -40,7 +39,7 @@ struct Parameters
         encoder_to_deg = 360.0 / encoder_resolution;
         rpm_to_radps = 1 / reduction_ratio / 60 * 2 * PI;
         encoder_to_rpm = 1 / reduction_ratio;
-        current_to_torque_coefficient = reduction_ratio * torque_constant / feedback_current_max * current_max;
+        current_to_torque_coefficient =  torque_constant / feedback_current_max * current_max;
         feedback_to_current_coefficient = current_max / feedback_current_max;
         deg_to_real = 1 / reduction_ratio;
     }
@@ -79,7 +78,7 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
      * @param RxHeader  接收数据的句柄
      * @param pData     接收数据的缓冲区
      */
-    void Parse(const HAL::CAN::Frame &frame)
+    void Parse(const HAL::CAN::Frame &frame) override
     {
         const uint16_t received_id = frame.id;
 
@@ -95,7 +94,7 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
 
                 Configure(i);
 
-                // this->updateTimestamp(i + 1);
+                this->updateTimestamp(i + 1);
             }
         }
     }
@@ -114,10 +113,11 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
 
     /**
      * @brief               发送Can数据
+     *
      * @param han           Can句柄
      * @param pTxMailbox    邮
      */
-    void sendCAN(uint32_t pTxMailbox)
+    void sendCAN()
     {
         // 修改此处以适应新的CAN接口
         HAL::CAN::Frame frame;
@@ -293,7 +293,7 @@ template <uint8_t N> class GM6020 : public DjiMotorBase<N>
  */
 
 // inline GM3508<4> Motor3508(0x200, {1, 2, 3, 4}, 0x200);
-inline GM6020<1> Motor6020(0x204, {2}, 0x1FF);
+
 
 } // namespace BSP::Motor::Dji
 

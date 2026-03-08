@@ -6,11 +6,12 @@
 // =======================================================================================================
 // 头文件包含
 // =======================================================================================================
-#include "../Common/StateWatch/state_watch.hpp"
+#include "BSP/Common/StateWatch/state_watch.hpp"
+#include "BSP/Common/StateWatch/buzzer_manager.hpp"
 #include <stdint.h>
 #include <algorithm>
 
-#define DT7_LIB_VERSION "v1.0.0"
+#define DT7_LIB_VERSION "v1.0.1"
 
 namespace BSP::REMOTE_CONTROL
 {
@@ -21,7 +22,7 @@ namespace BSP::REMOTE_CONTROL
     public:
 
         // 构造函数：初始化基类与成员
-        RemoteController(int timeThreshold = 100) : channels_({0}), mouse_({0}), keyboard_(0), statewatch_(timeThreshold)
+        RemoteController(int timeThreshold = 100) : channels_({0}), mouse_({0}), keyboard_(0), statewatch_(timeThreshold), deadzone(0.0f)
         {
         }
 
@@ -45,6 +46,7 @@ namespace BSP::REMOTE_CONTROL
             int16_t left_stick_y;  // 左摇杆Y坐标（已减去中值）
             int16_t right_stick_x; // 右摇杆X坐标（已减去中值）
             int16_t right_stick_y; // 右摇杆Y坐标（已减去中值）
+            int16_t scroll;
         };
 
         // 摇杆位置（每轴 -1.0~1.0）
@@ -108,23 +110,24 @@ namespace BSP::REMOTE_CONTROL
         // 精简对外接口（仅保留这个外部接口）
         // ======================================================
 
-        // 通道数据（含滚轮）
+        // 通道数据(中值1024)
         inline int16_t get_ch0() const { return channels_.ch0; }
         inline int16_t get_ch1() const { return channels_.ch1; }
         inline int16_t get_ch2() const { return channels_.ch2; }
         inline int16_t get_ch3() const { return channels_.ch3; }
         inline int16_t get_scroll() const { return channels_.scroll; }
-        // 摇杆数据
+        // 摇杆数据(-1--1)
         inline float get_left_x() const { return stick_position_.left_x; }
         inline float get_left_y() const { return stick_position_.left_y; }
         inline float get_right_x() const { return stick_position_.right_x; }
         inline float get_right_y() const { return stick_position_.right_y; }
         inline float get_scroll_() const { return stick_position_.scroll; }
-        // 坐标数据
+        // 坐标数据(-660--660)
         inline int16_t get_left_stick_x() const { return coordinates_.left_stick_x; }
         inline int16_t get_left_stick_y() const { return coordinates_.left_stick_y; }
         inline int16_t get_right_stick_x() const { return coordinates_.right_stick_x; }
         inline int16_t get_right_stick_y() const { return coordinates_.right_stick_y; }
+        inline int16_t get_scroll_660() const { return coordinates_.scroll; }
         // 鼠标数据
         inline bool get_mouseLeft() const { return mouse_.left; }
         inline bool get_mouseRight() const { return mouse_.right; }
@@ -143,9 +146,28 @@ namespace BSP::REMOTE_CONTROL
         {
             statewatch_.UpdateTime();
             statewatch_.CheckStatus();
+            if(statewatch_.GetStatus() == BSP::WATCH_STATE::Status::OFFLINE)
+            {
+                BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestRemoteRing();
+            }
             return statewatch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE;
         }
         
+        float DeadzoneCompensation(float value)
+        {
+            if(std::abs(value) < deadzone)
+            {
+                value = 0;
+            }
+            return value;
+        }
+
+        /**
+         * @brief 设置死区，适用于-660--660，-1--1
+         * 
+         * @param deadzone 死区大小，大小是对于-660--660而言的 
+         */
+        void SetDeadzone(float deadzone) { this->deadzone = deadzone; }
 
     private:
         static constexpr uint16_t CHANNEL_VALUE_MAX = 1684; // 最大值
@@ -190,7 +212,7 @@ namespace BSP::REMOTE_CONTROL
         uint16_t keyboard_;			   // 键盘数据
         StickPosition stick_position_; // 摇杆位置（-1.0~1.0）
         BSP::WATCH_STATE::StateWatch statewatch_;
-
+        float deadzone;				   // 死区
     };
 
 } // namespace BSP::REMOTE_CONTROL

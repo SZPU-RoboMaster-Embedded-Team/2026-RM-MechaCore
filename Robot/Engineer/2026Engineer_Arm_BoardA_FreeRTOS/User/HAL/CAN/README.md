@@ -17,6 +17,7 @@
 ## 文件结构
 
 ### 目录组织
+
 - `can_hal.hpp`: 主头文件，包含所有接口
 - `can_example.cpp`: 使用示例
 - `README.md`: 说明文档
@@ -32,7 +33,9 @@
   - `can_bus_impl.cpp`: CAN总线实现类实现
 
 ### 接口与实现分离
+
 这种目录结构将接口与实现明确分离，带来以下好处：
+
 1. 用户代码只需包含 `can_hal.hpp` 即可使用所有功能
 2. 实现细节被隐藏在 `impl` 目录中，用户不需要关注
 3. 便于替换具体实现而不影响用户代码
@@ -90,10 +93,10 @@ if (can_bus.has_device(HAL::CAN::CanDeviceId::HAL_Can3)) {
 void Init(void)
 {
     auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
-    
+
     // 方式1: 注册电机的Parse函数作为回调
     Motor6020.registerCallback(&can1);
-    
+
     // 方式2: 注册自定义lambda回调
     can1.register_rx_callback([](const HAL::CAN::Frame &frame) {
         // 处理CAN数据
@@ -101,7 +104,7 @@ void Init(void)
             // 处理ID为0x201的数据
         }
     });
-    
+
     // 可以注册多个回调，它们会按注册顺序依次执行
     can1.register_rx_callback([](const HAL::CAN::Frame &frame) {
         // 另一个回调处理逻辑
@@ -154,7 +157,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 CanDevice can3_;
 
 // 在构造函数中初始化和注册
-CanBus::CanBus() 
+CanBus::CanBus()
     : can1_(&hcan1, 0, CAN_FILTER_FIFO0)
     , can2_(&hcan2, 14, CAN_FILTER_FIFO1)
     , can3_(&hcan3, 15, CAN_FILTER_FIFO0) // 新增CAN3
@@ -186,6 +189,7 @@ if (can_bus.has_device(HAL::CAN::CanDeviceId::HAL_Can3)) {
 3. 添加新设备只需在实现类中增加实例并注册，无需修改接口
 
 这种设计使得系统：
+
 - 对扩展开放：可以轻松添加新的CAN设备
 - 对修改封闭：不需要修改接口或现有代码
 
@@ -247,6 +251,7 @@ if (can_bus.has_device(HAL::CAN::CanDeviceId::HAL_Can3)) {
 ### 回调函数类型
 
 回调函数类型定义为：
+
 ```cpp
 using RxCallback = std::function<void(const Frame &)>;
 ```
@@ -254,6 +259,7 @@ using RxCallback = std::function<void(const Frame &)>;
 可以使用以下几种方式注册回调：
 
 1. **Lambda表达式**（推荐）：
+
 ```cpp
 can1.register_rx_callback([](const HAL::CAN::Frame &frame) {
     // 处理数据
@@ -261,6 +267,7 @@ can1.register_rx_callback([](const HAL::CAN::Frame &frame) {
 ```
 
 2. **成员函数**：
+
 ```cpp
 // 在类中使用lambda捕获this指针
 Motor6020.registerCallback(&can1);
@@ -271,6 +278,7 @@ Motor6020.registerCallback(&can1);
 ```
 
 3. **普通函数**：
+
 ```cpp
 void my_can_handler(const HAL::CAN::Frame &frame) {
     // 处理数据
