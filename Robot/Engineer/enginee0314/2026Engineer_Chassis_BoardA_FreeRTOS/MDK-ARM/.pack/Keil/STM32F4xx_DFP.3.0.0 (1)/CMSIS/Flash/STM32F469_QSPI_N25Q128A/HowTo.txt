@@ -1,0 +1,27 @@
+MG 16.12.2022
+-------------
+
+OSPI Flash Algorithm for
+  - STM32F469I discovery board using HAL.
+  - N25Q128A OSPI device .
+
+copy necessary files from HAL:
+ - stm32f4xx_hal_conf.h
+ - stm32f4xx_hal_def.h
+ - stm32f4xx_hal_gpio.c
+ - stm32f4xx_hal_ospi.c
+ - ...
+
+use a ST board support OSPI driver:
+ - stm32469i_discovery_qspi.c               -> erase sector function added!
+
+check *_conf.h files
+
+use a helper file for SystemInit() and HAL_GetTick(), ...:
+ - stm32f4xx_helper.c
+
+Note:
+ - all ST files can be found in CubeMX repository.
+
+ - take care about initialized global const variables because
+   Flash Programming Algorithm does not use a scatter loader!
