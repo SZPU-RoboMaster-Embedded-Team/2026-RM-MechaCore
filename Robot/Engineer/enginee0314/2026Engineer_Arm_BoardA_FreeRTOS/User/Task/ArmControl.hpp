@@ -12,6 +12,7 @@
 #include "BSP/Common/StateWatch/buzzer_manager.hpp"
 #include "Alg/Filter/Filter.hpp"
 #include "Alg/UtilityFunction/SlopePlanning.hpp"
+#include "MotorTask.hpp"
 #include "HAL/DWT/DWT.hpp"
 #include "UartCom.hpp"
 #include "can.h"

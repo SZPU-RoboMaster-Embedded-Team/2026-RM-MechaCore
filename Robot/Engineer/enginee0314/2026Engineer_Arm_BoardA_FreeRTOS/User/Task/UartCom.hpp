@@ -32,6 +32,7 @@ extern float joint_tor[MOTOR_COUNT];
 // 异步通信标志与缓冲区
 extern volatile bool g_new_cmd_received;
 extern uint8_t g_cmd_payload_buffer[PACKET_DATA_LEN];
+extern volatile uint32_t g_last_host_cmd_tick;
 
 // 协议管理器
 extern uint8_t g_protocol_manager_storage[sizeof(HAL::UART::Protocol::ProtocolManager)];

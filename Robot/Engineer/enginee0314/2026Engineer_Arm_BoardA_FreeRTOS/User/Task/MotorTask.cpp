@@ -5,7 +5,7 @@ bool init_flag = false;
 
 void vofa_init()
 {
-    auto &uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
+    auto &uart7 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart7);
     HAL::UART::Data send_data{send_str2, sizeof(float) * 8};
 }
 
@@ -22,9 +22,9 @@ void vofa_send(float x1, float x2, float x3, float x4, float x5, float x6)
 
     *((uint32_t*)&send_str2[sizeof(float) * 6]) = 0x7F800000;
 
-    auto &uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
+    auto &uart7 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart7);
     HAL::UART::Data send_data{send_str2, sizeof(float) * 8};
-    uart6.transmit_dma(send_data);
+    uart7.transmit_dma(send_data);
 }
 
 void Motor_Init()
@@ -155,7 +155,7 @@ void Motor_Control_loop()
             }
 
             last_control_mode = false;
-            vofa_send(0.0f, Motor8009P.getAngleDeg(2), 0.0f, Motor8009P.getAngleDeg(3), 0.0f, 0.0f);
+            // vofa_send(0.0f, Motor8009P.getAngleDeg(2), 0.0f, Motor8009P.getAngleDeg(3), 0.0f, 0.0f);
             return;
         }
 
@@ -166,7 +166,7 @@ void Motor_Control_loop()
 
         last_control_mode = true;
         TASK::ARM::arm.JointControl();
-        vofa_send(0.0f, Motor8009P.getAngleDeg(2), 0.0f, Motor8009P.getAngleDeg(3), 0.0f, 0.0f);
+        // vofa_send(0.0f, Motor8009P.getAngleDeg(2), 0.0f, Motor8009P.getAngleDeg(3), 0.0f, 0.0f);
         return;
     }
 
@@ -194,7 +194,7 @@ void Motor_Control_loop()
         handle_dm_disable_sequence(Motor4310, 1, off_step[7], &hcan2);
     }
 
-    vofa_send(0.0f, Motor8009P.getAngleDeg(2), 0.0f, Motor8009P.getAngleDeg(3), 0.0f, 0.0f);
+    // vofa_send(0.0f, Motor8009P.getAngleDeg(2), 0.0f, Motor8009P.getAngleDeg(3), 0.0f, 0.0f);
 }
 
 extern "C" void MotorTask(void *argument)

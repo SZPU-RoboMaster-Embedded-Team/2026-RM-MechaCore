@@ -9,6 +9,7 @@ Protocol_Joint_data protocol_joint_data;
 
 volatile bool g_new_cmd_received = false;
 uint8_t g_cmd_payload_buffer[PACKET_DATA_LEN] = {0};
+volatile uint32_t g_last_host_cmd_tick = 0;
 
 float joint_pos[MOTOR_COUNT] = {0};
 float joint_vel[MOTOR_COUNT] = {0};
@@ -100,6 +101,8 @@ void process_received_data()
         TRACE_VEL[log_i][i] = vel;
         TRACE_TOR[log_i][i] = tor;
     }
+
+    g_last_host_cmd_tick = static_cast<uint32_t>(xTaskGetTickCount());
 
     log_i = (log_i + 1) % 10;
 }

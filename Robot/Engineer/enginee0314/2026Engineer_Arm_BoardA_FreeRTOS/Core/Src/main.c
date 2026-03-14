@@ -99,6 +99,7 @@ int main(void)
   MX_UART8_Init();
   MX_USART6_UART_Init();
   MX_TIM12_Init();
+  MX_UART7_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim12);
   /* USER CODE END 2 */

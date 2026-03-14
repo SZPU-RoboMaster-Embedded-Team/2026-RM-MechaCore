@@ -3,7 +3,7 @@
 
 float kp2_test = 0.0f;
 float kp3_test = 0.0f;
-float kp6_test = 0.0f;
+float kd3_test = 0.0f;
 
 BSP::Motor::DM::J4310<1> Motor4310(0x00, {8}, {7});
 BSP::Motor::DM::J4310P<2> Motor4310P(0x00, {4, 6}, {3, 5});
@@ -24,6 +24,8 @@ Alg::Utility::SlopePlanning motor_ramp[8] = {
 };
 
 float b, c, d;
+bool flag = false;
+bool flag2 = false;
 
 namespace TASK::ARM
 {
@@ -51,6 +53,7 @@ namespace TASK::ARM
     {
         offline_disable_request = !check_online();
         Joint_data_Get();
+        vofa_send(0.0f,joint_tor[2], joint_feedback_data[1], joint_pos[1], joint_feedback_data[2],joint_pos[2]);
     }
 
     void Arm::Joint_data_Get()
@@ -135,7 +138,7 @@ namespace TASK::ARM
 
         constexpr float KP_J1_TARGET = 80.0f;
         constexpr float KP_J2_TARGET = 70.0f;
-        constexpr float KP_J3_TARGET = 80.0f;
+        constexpr float KP_J3_TARGET = 50.0f;
         constexpr float KP_J4_TARGET = 40.0f;
         constexpr float KP_J5_TARGET = 70.0f;
         constexpr float KP_J6_TARGET = 35.0f;
@@ -144,6 +147,7 @@ namespace TASK::ARM
 
         if (soft_start_state == SoftStartState::RUNNING)
         {
+            flag = true;
             if (!g_end_4310_target_initialized)
             {
                 g_end_4310_target_pos = motor_fb[7];
@@ -239,6 +243,7 @@ namespace TASK::ARM
         kp_j1 += 0.2f; if (kp_j1 > KP_J1_TARGET) kp_j1 = KP_J1_TARGET;
         kp_j2 += 0.2f; if (kp_j2 > KP_J2_TARGET) kp_j2 = KP_J2_TARGET;
         kp_j3 += 0.2f; if (kp_j3 > KP_J3_TARGET) kp_j3 = KP_J3_TARGET;
+        // kp_j3 += 0.2f; if (kp_j3 > kp3_test) kp_j3 = kp3_test;
         kp_j4 += 0.2f; if (kp_j4 > KP_J4_TARGET) kp_j4 = KP_J4_TARGET;
         kp_j5 += 0.2f; if (kp_j5 > KP_J5_TARGET) kp_j5 = KP_J5_TARGET;
         kp_j6 += 0.2f; if (kp_j6 > KP_J6_TARGET) kp_j6 = KP_J6_TARGET;
@@ -258,23 +263,25 @@ namespace TASK::ARM
                 if (fabsf(joint_feedback_data[i] - joint_pos[i]) > HOST_SYNC_THRESHOLD_DEG)
                 {
                     host_synced = false;
+                    flag2 = true;
                     break;
                 }
             }
 
-            if (kp_ready && host_synced)
-            {
-                ++sync_ok_count;
-                if (sync_ok_count >= HOST_SYNC_STABLE_COUNT)
-                {
-                    soft_start_state = SoftStartState::RUNNING;
-                    sync_ok_count = 0;
-                }
-            }
-            else
-            {
-                sync_ok_count = 0;
-            }
+            // if (kp_ready && host_synced)
+            // {
+            //     ++sync_ok_count;
+            //     if (sync_ok_count >= HOST_SYNC_STABLE_COUNT)
+            //     {
+            //         soft_start_state = SoftStartState::RUNNING;
+            //         sync_ok_count = 0;
+            //     }
+            // }
+            // else
+            // {
+            //     sync_ok_count = 0;
+            // }
+            soft_start_state = SoftStartState::RUNNING;
         }
 
         b = motor_target_tor[1];
@@ -292,7 +299,7 @@ namespace TASK::ARM
         }
         else if (send_seq % 4 == 3)
         {
-            Motor8009P.ctrl_Mit(&hcan1, 3, cmd_pos[2], motor_target_vel[2], kp_j3, 5.0f, motor_target_tor[2]);
+            Motor8009P.ctrl_Mit(&hcan1, 3, cmd_pos[2], motor_target_vel[2], kp_j3, 2.0, motor_target_tor[2]);
             Motor4310P.ctrl_Mit(&hcan2, 2, cmd_pos[6], motor_target_vel[6], kp_j7, 2.0f, motor_target_tor[6]);
         }
         else
