@@ -1,0 +1,10 @@
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/2026Engineer_Arm_BoardA_FreeRTOS.ioc
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/2026Engineer_Arm_BoardA_FreeRTOS.ioc
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/2026Engineer_Arm_BoardA_FreeRTOS.ioc
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/Core/Inc/stm32f4xx_it.h
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/Core/Inc/usart.h
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/Core/Src/gpio.c
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/Core/Src/main.c
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/Core/Src/stm32f4xx_it.c
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/Core/Src/usart.c
+Robot/Engineer/2026Engineer_Arm_BoardA_FreeRTOS/MDK-ARM/2026Engineer_Arm_BoardA_FreeRTOS.uvprojx

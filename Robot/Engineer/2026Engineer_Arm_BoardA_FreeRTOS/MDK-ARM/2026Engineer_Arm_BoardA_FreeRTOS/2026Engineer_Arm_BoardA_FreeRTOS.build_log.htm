@@ -1,0 +1,82 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.42.0.0
+Copyright (C) 2025 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: sk Langyu, skks, LIC=Q7GU5-GDNGL-24QSS-L9LNR-Z6PJ9-SKQGK
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Professional  Version: 5.42.0.0
+Toolchain Path:  D:\Program Files\Keil\ARM\ARMCLANG\Bin
+C Compiler:      ArmClang.exe V6.23
+Assembler:       Armasm.exe V6.23
+Linker/Locator:  ArmLink.exe V6.23
+Library Manager: ArmAr.exe V6.23
+Hex Converter:   FromElf.exe V6.23
+CPU DLL:         SARMCM3.DLL V5.42.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      CMSIS_AGDI.dll V1.33.22.0
+Dialog DLL:      TCM.DLL V1.56.6.0
+ 
+<h2>Project:</h2>
+D:\rm\Control\ÑÐ·¢´úÂë\Robot\2026Engineer_Arm_BoardA_FreeRTOS\MDK-ARM\2026Engineer_Arm_BoardA_FreeRTOS.uvprojx
+Project File Date:  01/29/2026
+
+<h2>Output:</h2>
+*** Using Compiler 'V6.23', folder: 'D:\Program Files\Keil\ARM\ARMCLANG\Bin'
+Build target '2026Engineer_Arm_BoardA_FreeRTOS'
+../User/Task/UartCom.cpp(1): error: 'CommunicationTask.hpp' file not found
+    1 | #include "CommunicationTask.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+compiling UartCom.cpp...
+assembling startup_stm32f427xx.s...
+compiling freertos.c...
+../User/Task/ArmControl.cpp(1): warning: In file included from...
+../User/Task\ArmControl.hpp(12): error: 'CommunicationTask.hpp' file not found
+   12 | #include "CommunicationTask.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+compiling ArmControl.cpp...
+../User/Task/RemoteTask.cpp(1): warning: In file included from...
+../User/Task\RemoteTask.hpp(7): warning: In file included from...
+../User/Task\ArmControl.hpp(12): error: 'CommunicationTask.hpp' file not found
+   12 | #include "CommunicationTask.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+compiling RemoteTask.cpp...
+../User/Task/Callback.cpp(6): error: 'CommunicationTask.hpp' file not found
+    6 | #include "CommunicationTask.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+compiling Callback.cpp...
+"2026Engineer_Arm_BoardA_FreeRTOS\2026Engineer_Arm_BoardA_FreeRTOS.axf" - 4 Error(s), 0 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                https://www.keil.com/pack/ARM.CMSIS.6.1.0.pack
+                ARM::CMSIS@6.1.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 6.1.0
+
+Package Vendor: Keil
+                https://www.keil.com/pack/Keil.STM32F4xx_DFP.3.1.1.pack
+                Keil::STM32F4xx_DFP@3.1.1
+                STMicroelectronics STM32F4 Series Device Support
+
+<h2>Collection of Component include folders:</h2>
+  ./RTE/_2026Engineer_Arm_BoardA_FreeRTOS
+  D:/Program Files/Keil/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE@6.1.0
+      Include file:  CMSIS/Core/Include/tz_context.h
+Target not created.
+Build Time Elapsed:  00:00:02
+</pre>
+</body>
+</html>
