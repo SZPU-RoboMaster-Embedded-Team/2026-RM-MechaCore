@@ -1,0 +1,79 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.32.0.0
+Copyright (C) 2020 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: nian yi, diannao, LIC=JL28G-VYSR8-JJY6S-LIXHV-APN1U-H2Z4Z
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.32.0.0
+Toolchain Path:  E:\keli\ARM\ARMCLANG\Bin
+C Compiler:      ArmClang.exe V6.14.1
+Assembler:       Armasm.exe V6.14.1
+Linker/Locator:  ArmLink.exe V6.14.1
+Library Manager: ArmAr.exe V6.14.1
+Hex Converter:   FromElf.exe V6.14.1
+CPU DLL:         SARMCM3.DLL V5.32.0.0
+Dialog DLL:      DCM.DLL V1.17.3.0
+Target DLL:      CMSIS_AGDI.dll V1.32.12.0
+Dialog DLL:      TCM.DLL V1.46.0.0
+ 
+<h2>Project:</h2>
+G:\RCIA\2026-RM-MechaCore\Robot\Drone\2026_Drone\MDK-ARM\2026_Drone.uvprojx
+Project File Date:  03/08/2026
+
+<h2>Output:</h2>
+*** Using Compiler 'V6.14.1', folder: 'E:\keli\ARM\ARMCLANG\Bin'
+Build target '2026_Drone'
+Note: source file '..\User\core\Alg\ADRC\adrc.hpp' - object file renamed from '2026_Drone\adrc.o' to '2026_Drone\adrc_1.o'.
+Note: source file '..\User\core\Alg\PID\pid.hpp' - object file renamed from '2026_Drone\pid.o' to '2026_Drone\pid_1.o'.
+Note: source file '..\User\core\BSP\Common\FiniteStateMachine\FiniteStateMachine_gimbal.hpp' - object file renamed from '2026_Drone\FiniteStateMachine_gimbal.o' to '2026_Drone\finitestatemachine_gimbal_1.o'.
+Note: source file '..\User\core\BSP\Common\FiniteStateMachine\FiniteStateMachine_launch.hpp' - object file renamed from '2026_Drone\FiniteStateMachine_launch.o' to '2026_Drone\finitestatemachine_launch_1.o'.
+Note: source file '..\User\core\BSP\Common\StateWatch\buzzer_manager.hpp' - object file renamed from '2026_Drone\buzzer_manager.o' to '2026_Drone\buzzer_manager_1.o'.
+Note: source file '..\User\core\BSP\Common\StateWatch\state_watch.hpp' - object file renamed from '2026_Drone\state_watch.o' to '2026_Drone\state_watch_1.o'.
+Note: source file '..\User\core\BSP\RemoteControl\DT7.hpp' - object file renamed from '2026_Drone\DT7.o' to '2026_Drone\dt7_1.o'.
+Note: source file '..\User\core\HAL\CAN\impl\can_bus_impl.hpp' - object file renamed from '2026_Drone\can_bus_impl.o' to '2026_Drone\can_bus_impl_1.o'.
+Note: source file '..\User\core\HAL\CAN\impl\can_device_impl.hpp' - object file renamed from '2026_Drone\can_device_impl.o' to '2026_Drone\can_device_impl_1.o'.
+Note: source file '..\User\core\HAL\CAN\interface\can_bus.hpp' - object file renamed from '2026_Drone\can_bus.o' to '2026_Drone\can_bus_1.o'.
+Note: source file '..\User\core\HAL\CAN\interface\can_device.hpp' - object file renamed from '2026_Drone\can_device.o' to '2026_Drone\can_device_1.o'.
+Note: source file '..\User\core\HAL\UART\impl\uart_bus_impl.hpp' - object file renamed from '2026_Drone\uart_bus_impl.o' to '2026_Drone\uart_bus_impl_1.o'.
+Note: source file '..\User\core\HAL\UART\impl\uart_device_impl.hpp' - object file renamed from '2026_Drone\uart_device_impl.o' to '2026_Drone\uart_device_impl_1.o'.
+Note: source file '..\User\core\HAL\UART\interface\uart_bus.hpp' - object file renamed from '2026_Drone\uart_bus.o' to '2026_Drone\uart_bus_1.o'.
+Note: source file '..\User\Task\Callback.hpp' - object file renamed from '2026_Drone\Callback.o' to '2026_Drone\callback_1.o'.
+Note: source file '..\User\Task\Communication.hpp' - object file renamed from '2026_Drone\Communication.o' to '2026_Drone\communication_1.o'.
+Note: source file '..\User\Task\ControlTask.hpp' - object file renamed from '2026_Drone\ControlTask.o' to '2026_Drone\controltask_1.o'.
+Note: source file '..\User\Task\MotorTask.hpp' - object file renamed from '2026_Drone\MotorTask.o' to '2026_Drone\motortask_1.o'.
+Note: source file '..\User\Task\SerivalTask.hpp' - object file renamed from '2026_Drone\SerivalTask.o' to '2026_Drone\serivaltask_1.o'.
+compiling ControlTask.cpp...
+linking...
+Program Size: Code=39492 RO-data=1188 RW-data=228 ZI-data=21684  
+FromELF: creating hex file...
+"2026_Drone\2026_Drone.axf" - 0 Error(s), 0 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                https://www.keil.com/pack/ARM.CMSIS.6.2.0.pack
+                ARM.CMSIS.6.2.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 6.1.1
+
+Package Vendor: Keil
+                https://www.keil.com/pack/Keil.STM32F4xx_DFP.3.0.0.pack
+                Keil.STM32F4xx_DFP.3.0.0
+                STMicroelectronics STM32F4 Series Device Support
+
+<h2>Collection of Component include folders:</h2>
+  .\RTE\_2026_Drone
+  E:\keli\ARM\CMSIS\6.2.0\CMSIS\Core\Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:6.1.1
+      Include file:  CMSIS\Core\Include\tz_context.h
+Build Time Elapsed:  00:00:04
+</pre>
+</body>
+</html>
