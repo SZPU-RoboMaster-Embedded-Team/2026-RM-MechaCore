@@ -3,64 +3,52 @@
 #include "timers.h"
 
 /*  =========================== 全局变量的初始化 ===========================  */
-// int Yaw_Count          = 0; // yaw轴计数器
-// int TrafficLight_Count = 0; // 交通灯计数器
-// 定义全局变量和定时器句柄
-TimerHandle_t xNoteTimer;    // 用于音符延时的定时器
-TimerHandle_t xRestTimer;    // 用于静音间隔的定时器
+
 /*  ==============================进程的变量===============================  */
 // TickType_t SystemTick; // 系统滴答计数
-uint16_t psc = 0;
-uint16_t pwm = MIN_BUZZER_PWM;
 
-// 播放状态
-uint8_t playState = 1;
-// 播放进度
-uint32_t playIndex = 0;
-// 节拍速度(每分钟多少拍) 
-uint16_t bpm = 171;
-uint32_t timFrequency_;
-float noteDuration;
-int Song_Length = 0;
+// 裁判系统连接检测（只依赖 RMRefereeSystemData，不修改其模块）
+static uint8_t RMRefereeSystem_LastSeq     = 0;
+static uint32_t RMRefereeSystem_LastRxTick = 0;
+
 /*  =========================== 函数的声明 ===========================  */
 void CheckSystemStatus_TrafficLight();
 void SyncYawAngle();
-void Buzzer_Timers_Init(void);
-void NoteTimerCallback(TimerHandle_t xTimer);
-void RestTimerCallback(TimerHandle_t xTimer);
-void Handle_Next_Note(void);
 
 void TimerCallback(void *argument)
 {
     /* USER CODE BEGIN LED_Flashing */
     TickType_t Lasttick = xTaskGetTickCount();
-    // 开始PWM输出
-    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
-    // TIM4的计数频率
-    timFrequency_ = TIM_GetCounterFreq(&htim12);
-    // 每拍的持续时间
-    noteDuration = 1000 * 60 / bpm;
-    
+
     // 初始化电机掉线检测器
     MotorOfflineDetector_Init();
     Buzzer_Timers_Init();
-    vTaskDelay(3000); // 延时，确保定时器初始化完成
+    HX711.Init();
+    HX711.Offset = 8420300; // 固定零点值 (无需每次开机去皮)
+    vTaskDelay(3000);       // 延时，确保定时器初始化完成
     /* Infinite loop */
     for (;;) {
 
-        //uint32_t SystemTick = HAL_GetTick(); // 获取系统滴答数
+        uint32_t current_tick = HAL_GetTick();
 
-        // 优先处理电机断连报警（每10毫秒执行一次）
-        if (SystemTick % 10 == 0) { 
-            SyncYawAngle();         // 同步Yaw轴角度
-        }
+        SyncYawAngle(); // 同步Yaw轴角度
 
-        if (SystemTick % 300 == 0) {
+        static uint32_t last_traffic_time = 0;
+        if (current_tick - last_traffic_time >= 300) {
             CheckSystemStatus_TrafficLight();
+            last_traffic_time = current_tick;
         }
 
         MotorOfflineDetector_Update(); // 更新电机掉线检测器状态
-        Handle_Buzzer(); // 处理蜂鸣器播放
+        VisionUartReceive.CheckConnection(); // 检查视觉连接状态
+        Handle_Buzzer();               // 处理蜂鸣器播放
+
+        // HX711 非阻塞持续轮询 
+        static uint32_t last_hx711_time = 0;
+        if (current_tick - last_hx711_time >= 5) {
+            HX711.ReadFiltered();
+            last_hx711_time = current_tick;
+        }
 
         vTaskDelayUntil(&Lasttick, pdMS_TO_TICKS(1)); // 每1毫秒执行一次
     }
@@ -77,19 +65,35 @@ void CheckSystemStatus_TrafficLight()
     else
         HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, GPIO_PIN_SET); // 绿灯关闭
 
-    if (MyRefereeSystemData.SOF == 0xA5)
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_RESET); // 红灯常亮
-    else
-        HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_11); // 红灯闪烁
+    // 裁判系统连接状态指示：1s 内 seq 有变化则认为连接正常
+    uint32_t now = HAL_GetTick();
+    if (RMRefereeSystemData.seq != RMRefereeSystem_LastSeq) {
+        RMRefereeSystem_LastSeq    = RMRefereeSystemData.seq;
+        RMRefereeSystem_LastRxTick = now;
+    }
 
-    osDelay(300); // 延时300毫秒
+    if ((RMRefereeSystem_LastRxTick != 0U) && (now - RMRefereeSystem_LastRxTick <= 1000U)) {
+        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_RESET); // 红灯常亮
+    } else {
+        HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_11); // 红灯闪烁
+    }
 }
 
 void SyncYawAngle()
 {
-    if ((DT7UartCom.rc.s1 == MID) && DT7UartCom.isConnected == true && DT7UartCom.Coord.ch0 != 0) {
+    static bool was_moving = false;
+
+    if ((DT7UartCom.rc.s1 == MID) && DT7UartCom.isConnected == true && std::abs(DT7UartCom.Coord.ch0) > 20) {
         // yaw轴的值加等于摇杆的值
-        Dart.Add_Motor_Target(&Dart.Yaw_Angle, DT7UartCom.Coord.ch0 * -0.02, LEAST_YAW, MAX_YAW);
+        Dart.Add_Motor_Target(&Dart.Yaw_Angle, DT7UartCom.Coord.ch0 * 0.01, LEAST_YAW, MAX_YAW);
+        was_moving = true;
+    } else {
+        // 【关键修复】刚松开摇杆时，把目标角度快照为当前物理角度，瞬间刹车
+        // 这样松开摇杆后 PID 误差瞬间清零，电机立刻停死。并且完全不会干扰视觉瞄准
+        if (was_moving) {
+            Dart.Yaw_Angle = SpeedPID_AngleSensorM3508.Current;
+            was_moving     = false;
+        }
     }
 }
 
@@ -100,7 +104,7 @@ void SyncYawAngle()
 //     //     playState = 0;
 //     //     return; // 有电机掉线报警，不播放音乐
 //     // }
-    
+
 //     Song_Length = sizeof(You) / sizeof(Bate);
 //     if (playState){
 //         const Bate bate = You[playIndex];
@@ -123,7 +127,7 @@ void SyncYawAngle()
 //         HAL_Delay((uint32_t) (bate.period * noteDuration) - 5);
 //         __HAL_TIM_SET_COMPARE(&htim12, TIM_CHANNEL_1, 0);
 //         HAL_Delay(5);
-  
+
 //         // 下一个音符
 //         playIndex++;
 //         // 播放结束
@@ -158,87 +162,4 @@ uint32_t TIM_GetCounterFreq(TIM_HandleTypeDef *htim)
 
     uint32_t prescaler = htim->Instance->PSC;
     return timer_clock / (prescaler + 1);
-}
-
-
-// 初始化定时器（在程序初始化时调用）
-void Buzzer_Timers_Init(void)
-{
-    xNoteTimer = xTimerCreate("NoteTimer", pdMS_TO_TICKS(1), pdFALSE, NULL, NoteTimerCallback);
-    xRestTimer = xTimerCreate("RestTimer", pdMS_TO_TICKS(1), pdFALSE, NULL, RestTimerCallback);
-    
-    // 检查定时器是否创建成功
-    if (xNoteTimer == NULL || xRestTimer == NULL) {
-        // 定时器创建失败处理
-        Error_Handler();
-    }
-}
-
-// 音符定时器回调函数
-void NoteTimerCallback(TimerHandle_t xTimer)
-{
-    // 停止当前音符（静音）
-    __HAL_TIM_SET_COMPARE(&htim12, TIM_CHANNEL_1, 0);
-    // 启动静音定时器（5ms）
-    xTimerChangePeriod(xRestTimer, pdMS_TO_TICKS(5), portMAX_DELAY);
-    xTimerStart(xRestTimer, portMAX_DELAY);
-}
-
-// 静音定时器回调函数
-void RestTimerCallback(TimerHandle_t xTimer)
-{
-    // 播放下一个音符
-    playIndex++;
-    if (playIndex >= Song_Length) {
-        playState = 0;
-        playIndex = 0;
-        // 停止定时器
-        xTimerStop(xNoteTimer, 0);
-        xTimerStop(xRestTimer, 0);
-    } else {
-        // 直接处理下一个音符（避免任务调度延迟）
-        Handle_Next_Note();
-    }
-}
-
-// 处理下一个音符（无延时）
-void Handle_Next_Note(void)
-{
-    const Bate bate = Xixirangrang[playIndex];
-    if (bate.frequency == P0) {
-        __HAL_TIM_SET_COMPARE(&htim12, TIM_CHANNEL_1, 0);
-        // 对于休止符，也启动定时器来处理时长
-        xTimerChangePeriod(xNoteTimer, pdMS_TO_TICKS(bate.period * noteDuration - 5), portMAX_DELAY);
-        xTimerStart(xNoteTimer, portMAX_DELAY);
-    } else {
-        uint32_t arr = timFrequency_ / bate.frequency;
-        __HAL_TIM_SET_AUTORELOAD(&htim12, arr);
-        __HAL_TIM_SET_COMPARE(&htim12, TIM_CHANNEL_1, arr / 5);
-        __HAL_TIM_SetCounter(&htim12, 0);
-        // 启动音符定时器（减去5ms的静音间隔）
-        xTimerChangePeriod(xNoteTimer, pdMS_TO_TICKS(bate.period * noteDuration - 5), portMAX_DELAY);
-        xTimerStart(xNoteTimer, portMAX_DELAY);
-    }
-}
-
-// 主处理函数（在任务中循环调用）
-void Handle_Buzzer(void)
-{
-    // 检查是否有电机掉线报警，如果有则不播放音乐
-    if (all_motors_connected == false) {
-        playState = 0;
-        // 停止音乐播放定时器
-        if (xTimerIsTimerActive(xNoteTimer)) {
-            xTimerStop(xNoteTimer, 0);
-        }
-        if (xTimerIsTimerActive(xRestTimer)) {
-            xTimerStop(xRestTimer, 0);
-        }
-        return; // 有电机掉线报警，不播放音乐
-    }
-    
-    Song_Length = sizeof(Xixirangrang) / sizeof(Bate);
-    if (playState && !xTimerIsTimerActive(xNoteTimer) && !xTimerIsTimerActive(xRestTimer)) {
-        Handle_Next_Note();
-    }
 }

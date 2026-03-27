@@ -734,6 +734,16 @@
               <FileType>5</FileType>
               <FilePath>.\BSP_Uart_Communication\VofaCallBack.hpp</FilePath>
             </File>
+            <File>
+              <FileName>RMRefereeSystemCRC.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\BSP_Uart_Communication\RMRefereeSystemCRC.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>RMRefereeSystemCRC.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BSP_Uart_Communication\RMRefereeSystemCRC.hpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -790,6 +800,26 @@
               <FilePath>.\APP_Task\Timer.hpp</FilePath>
             </File>
             <File>
+              <FileName>Buzzer.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\APP_Task\Buzzer.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Buzzer.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\APP_Task\Buzzer.hpp</FilePath>
+            </File>
+            <File>
+              <FileName>HX711.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\APP_Task\HX711.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>HX711.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\APP_Task\HX711.hpp</FilePath>
+            </File>
+            <File>
               <FileName>AutoLaunch.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\APP_Task\AutoLaunch.cpp</FilePath>
@@ -809,10 +839,17 @@
               <FileType>5</FileType>
               <FilePath>.\APP_Task\MotorOfflineDetector.hpp</FilePath>
             </File>
+            <File>
+              <FileName>ServoControl.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\APP_Task\ServoControl.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>ServoControl.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\APP_Task\ServoControl.hpp</FilePath>
+            </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>Middlewares/Library/DSP Library/DSP Library</GroupName>
@@ -912,6 +949,9 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
+        </Group>
       </Groups>
     </Target>
   </Targets>
@@ -919,8 +959,8 @@
   <RTE>
     <apis/>
     <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="6.1.0" condition="ARMv6_7_8-M Device">
-        <package name="CMSIS" schemaVersion="1.7.36" url="https://www.keil.com/pack/" vendor="ARM" version="6.1.0"/>
+      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="6.1.1" condition="ARMv6_7_8-M Device">
+        <package name="CMSIS" schemaVersion="1.7.40" url="https://www.keil.com/pack/" vendor="ARM" version="6.2.0"/>
         <targetInfos>
           <targetInfo name="Dart"/>
         </targetInfos>

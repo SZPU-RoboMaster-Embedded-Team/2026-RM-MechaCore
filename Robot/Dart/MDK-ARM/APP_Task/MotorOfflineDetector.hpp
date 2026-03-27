@@ -6,9 +6,9 @@
 #ifndef __MOTOR_OFFLINE_DETECTOR_HPP
 #define __MOTOR_OFFLINE_DETECTOR_HPP
 
+#include <stdint.h>
 #include "main.h"
 #include "tim.h"
-#include "InHpp.hpp"
 
 // 电机数量
 #define MOTOR_COUNT 8
@@ -17,25 +17,26 @@
 #define OFFLINE_THRESHOLD_MS 100
 
 // 蜂鸣器报警相关时间参数（毫秒）
-#define BUZZER_ON_TIME_MS 1
-#define BUZZER_OFF_TIME_MS 1
-#define BUZZER_CYCLE_WAIT_MS 2000
+#define BUZZER_ON_TIME_MS 50
+#define BUZZER_OFF_TIME_MS 50
+#define BUZZER_CYCLE_WAIT_MS 750
 
 // 电机ID定义
 typedef enum {
-    MOTOR_ID_1 = 0,  // 0x201 - 右下摩擦轮
-    MOTOR_ID_2 = 1,  // 0x202 - 右上摩擦轮
-    MOTOR_ID_3 = 2,  // 0x203 - 左上摩擦轮
-    MOTOR_ID_4 = 3,  // 0x204 - 左下摩擦轮
-    MOTOR_ID_5 = 4,  // 0x205 - Yaw轴电机
-    MOTOR_ID_6 = 5,  // 0x206 - 左右丝杆电机
-    MOTOR_ID_7 = 6,  // 0x207 - 上下丝杆推进器电机
-    MOTOR_ID_8 = 7   // 0x208 - 编码器电机
+    MOTOR_ID_1 = 0,  // 0x201 - 预留（暂未使用）
+    MOTOR_ID_2 = 1,  // 0x202 - 左侧升降 M2006
+    MOTOR_ID_3 = 2,  // 0x203 - 右侧上膛 M3508
+    MOTOR_ID_4 = 3,  // 0x204 - 左侧上膛 M3508
+    MOTOR_ID_5 = 4,  // 0x205 - Yaw轴电机 M6020
+    MOTOR_ID_6 = 5,  // 0x206 - 右侧升降 M2006
+    MOTOR_ID_7 = 6,  // 0x207 - 拉簧/滑块电机 M3508
+    MOTOR_ID_8 = 7   // 0x208 - 角度传感器 M3508
 } MotorID_t;
 
 // 电机状态结构体
 typedef struct {
     uint32_t last_update_time;  // 最后更新时间
+    bool is_enabled;            // 是否启用掉线检测
     bool is_offline;            // 是否掉线
     bool is_alarming;           // 是否正在报警
     uint8_t alarm_count;        // 当前报警次数

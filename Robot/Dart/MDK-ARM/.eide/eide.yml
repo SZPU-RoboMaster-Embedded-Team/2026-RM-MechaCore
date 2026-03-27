@@ -122,6 +122,8 @@ virtualFolder:
             - path: BSP_Uart_Communication/RMRefereeSystem.hpp
             - path: BSP_Uart_Communication/VofaCallBack.cpp
             - path: BSP_Uart_Communication/VofaCallBack.hpp
+            - path: BSP_Uart_Communication/RMRefereeSystemCRC.cpp
+            - path: BSP_Uart_Communication/RMRefereeSystemCRC.hpp
           folders: []
     - name: APP
       files: []
@@ -138,10 +140,16 @@ virtualFolder:
             - path: APP_Task/VisionCommunication.hpp
             - path: APP_Task/Timer.cpp
             - path: APP_Task/Timer.hpp
+            - path: APP_Task/Buzzer.cpp
+            - path: APP_Task/Buzzer.hpp
+            - path: APP_Task/HX711.cpp
+            - path: APP_Task/HX711.hpp
             - path: APP_Task/AutoLaunch.cpp
             - path: APP_Task/AutoLaunch.hpp
             - path: APP_Task/MotorOfflineDetector.cpp
             - path: APP_Task/MotorOfflineDetector.hpp
+            - path: APP_Task/ServoControl.cpp
+            - path: APP_Task/ServoControl.hpp
           folders: []
     - name: ::CMSIS
       files: []
@@ -184,7 +192,8 @@ targets:
         options:
           version: 4
           afterBuildTasks: []
-          asm-compiler: {}
+          asm-compiler:
+            defines: []
           beforeBuildTasks: []
           c/cpp-compiler:
             CXX_FLAGS: --diag_suppress=1 --diag_suppress=1295

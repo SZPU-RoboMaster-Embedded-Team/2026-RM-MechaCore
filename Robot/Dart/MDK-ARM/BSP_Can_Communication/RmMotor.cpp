@@ -7,6 +7,8 @@
 #include "MotorOfflineDetector.hpp"
 
 /*  =========================== 全局变量的初始化 ===========================  */
+CAN_TxHeaderTypeDef  RmCanTxMessage;
+uint8_t              RmCanTxData[8];
 // RmMotorMeasure_t UpFrM3508Data        = {0};
 // RmMotorMeasure_t LeftDdownFrM3508Data = {0};
 // RmMotorMeasure_t RightDownFrM3508Data = {0};
@@ -15,14 +17,7 @@
 // RmMotorMeasure_t DailM3508Data        = {0};
 // RmMotorMeasure_t YawM6020Data         = {0};
 // RmMotorMeasure_t PitchM3508Data       = {0};
-RmMotorMeasure_t RightDownM3508Data = {0};
-RmMotorMeasure_t RightUpM3508Data   = {0};
-RmMotorMeasure_t LeftUpM3508Data    = {0};
-RmMotorMeasure_t LeftDownM3508Data  = {0};
-RmMotorMeasure_t YawM6020Data       = {0};
-RmMotorMeasure_t SlidePlatformM2006 = {0};
-RmMotorMeasure_t VerticalLiftM2006  = {0};
-RmMotorMeasure_t AngleSensorM3508   = {0};
+// 电机反馈变量已统一到 Motors[] 数组中 (MotorControl.hpp)
 
 uint8_t motor_connection_status[8] = {1, 1, 1, 1, 1, 1, 1, 1};  // 初始化为连接状态
 
@@ -38,64 +33,58 @@ void RmMotorSendCanID0X200Data(CAN_HandleTypeDef *hcan, int16_t motor1, int16_t 
 
 
 
-
 /**
  * @brief 获取CAN数据
  * @details 该函数解析接收到的CAN数据并更新电机测量数据
+ *          CAN ID 与 Motors[] 索引的映射关系在此处定义
  */
 void RmMotorGetCanData()
 {
     switch (Can_RX.Header.StdId) {
-        case 0x201: // 右下摩擦轮
-            RMmotorClockwiseGetData(&RightDownM3508Data, Can_RX.Data);
-            RightDownM3508Data.RPM = TdFilter(&TD_RightDownFriction, RightDownM3508Data.RPM);
+        case 0x201: // 保留位（暂未使用）
+            RMmotorClockwiseGetData(&Motors[INDEX_RESERVED].Feedback, Can_RX.Data);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_1);
             break;
             
-        case 0x202: // 右上摩擦轮
-            RMmotorClockwiseGetData(&RightUpM3508Data, Can_RX.Data);
-            RightUpM3508Data.RPM = TdFilter(&TD_RightUpFriction, RightUpM3508Data.RPM);
+        case 0x202: // 左边上下升降 M2006
+            RMmotorClockwiseGetData(&Motors[INDEX_LEFT_LIFT].Feedback, Can_RX.Data);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_2);
             break;
             
-        case 0x203: // 左上摩擦轮
-            RMmotorClockwiseGetData(&LeftUpM3508Data, Can_RX.Data);
-            LeftUpM3508Data.RPM = TdFilter(&TD_LeftUpFriction, LeftUpM3508Data.RPM);
+        case 0x203: // 右边上膛 M3508
+            RMmotorClockwiseGetData(&Motors[INDEX_RIGHT_LOAD].Feedback, Can_RX.Data);
+            Motors[INDEX_RIGHT_LOAD].Feedback.RPM = TdFilter(&Motors[INDEX_RIGHT_LOAD].Filter, Motors[INDEX_RIGHT_LOAD].Feedback.RPM);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_3);
             break;
             
-        case 0x204: // 左下摩擦轮
-            RMmotorClockwiseGetData(&LeftDownM3508Data, Can_RX.Data);
-            LeftDownM3508Data.RPM = TdFilter(&TD_LeftDownFriction, LeftDownM3508Data.RPM);
+        case 0x204: // 左边上膛 M3508
+            RMmotorClockwiseGetData(&Motors[INDEX_LEFT_LOAD].Feedback, Can_RX.Data);
+            Motors[INDEX_LEFT_LOAD].Feedback.RPM = TdFilter(&Motors[INDEX_LEFT_LOAD].Filter, Motors[INDEX_LEFT_LOAD].Feedback.RPM);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_4);
             break;
             
-        case 0x205: // Yaw轴电机
-            RMmotorClockwiseGetData(&YawM6020Data, Can_RX.Data);
-            // YawM6020Data.Angle = MyTool::Round_ZeroSetup(YawM6020Data.Angle, 3830, 8192);
-            // YawM6020Data.Angle = MyTool::Round_MileageWithLimit(YawM6020Data.Angle, 8192, 2, Mileage.YawM6020.CircleCount, Mileage.YawM6020.Temp);
-            //  Report.YawM6020.Count_Paparazzi++;
+        case 0x205: // Yaw轴 M6020
+            RMmotorClockwiseGetData(&Motors[INDEX_YAW].Feedback, Can_RX.Data);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_5);
             break;
             
-        case 0x206: // 左右丝杆电机
-            RMmotorClockwiseGetData(&SlidePlatformM2006, Can_RX.Data);
-            //RMmotorCounterclockwiseGetData(&SlidePlatformM2006, Can_RX.Data);
-            // PitchM3508Data.Angle = MyTool::Round_Mileage(PitchM3508Data.Angle, 8192, Mileage.PitchM3508.CircleCount, Mileage.PitchM3508.Temp);
-            //  Report.PitchM3508.Count_Paparazzi++;
+        case 0x206: // 右边上下升降 M2006
+            RMmotorClockwiseGetData(&Motors[INDEX_RIGHT_LIFT].Feedback, Can_RX.Data);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_6);
             break;
             
-        case 0x207: // 上下丝杆推进器电机
-            RMmotorClockwiseGetData(&VerticalLiftM2006, Can_RX.Data);
-            // LeftFrM3508Data.RPM = TdFilter(&TD_LeftFrictionWheel,LeftFrM3508Data.RPM);
+        case 0x207: // 拉簧调节 M3508
+            RMmotorClockwiseGetData(&Motors[INDEX_SPRING].Feedback, Can_RX.Data);
+            Motors[INDEX_SPRING].Feedback.RPM = TdFilter(&Motors[INDEX_SPRING].Filter, Motors[INDEX_SPRING].Feedback.RPM);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_7);
             break;
             
-        case 0x208: // 编码器电机
-            RMmotorClockwiseGetData(&AngleSensorM3508, Can_RX.Data);
-            //AngleSensorM3508.Angle = TdFilter(&TD_AngleSensor, AngleSensorM3508.Angle);
-            // RightFrM3508Data.RPM = TdFilter(&TD_RightFrictionWheel,RightFrM3508Data.RPM);
+        case 0x208: // 角度传感器 M3508 (Yaw外环反馈，独立于Motors数组)
+            {
+                static RmMotorMeasure_t AngleSensorFeedback = {0};
+                RMmotorClockwiseGetData(&AngleSensorFeedback, Can_RX.Data);
+                SpeedPID_AngleSensorM3508.Current = AngleSensorFeedback.Angle;
+            }
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_8);
             break;
     }
@@ -111,8 +100,8 @@ void RmMotorGetCanData()
 void RMmotorClockwiseGetData(RmMotorMeasure_t *ptr, uint8_t data[])
 {
     (ptr)->Angle       = (uint16_t)(((data)[0] << 8 | (data)[1]));
-    (ptr)->RPM         = (uint16_t)((data)[2] << 8 | (data)[3]);
-    (ptr)->Current     = (uint16_t)((data)[4] << 8 | (data)[5]);
+    (ptr)->RPM         = (int16_t)((data)[2] << 8 | (data)[3]);
+    (ptr)->Current     = (int16_t)((data)[4] << 8 | (data)[5]);
     (ptr)->Temperature = (data)[6];
 }
 
@@ -127,8 +116,8 @@ void RMmotorCounterclockwiseGetData(RmMotorMeasure_t *ptr, uint8_t data[])
     (ptr)->Angle       = (uint16_t)(((data)[0] << 8 | (data)[1]));
     (ptr)->Angle       = 8192 - (ptr)->Angle;
     (ptr)->Angle       = ((ptr)->Angle >= 8192) ? 0 : (ptr)->Angle;
-    (ptr)->RPM         = 0 - (uint16_t)((data)[2] << 8 | (data)[3]);
-    (ptr)->Current     = (uint16_t)((data)[4] << 8 | (data)[5]);
+    (ptr)->RPM         = -(int16_t)((data)[2] << 8 | (data)[3]);
+    (ptr)->Current     = (int16_t)((data)[4] << 8 | (data)[5]);
     (ptr)->Temperature = (data)[6];
 }
 

@@ -32,7 +32,7 @@ void PID_Speed::Compute()
 }
 
 // ███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-
+/*
 void DoublePosPID::Compute()
 {
     attribute.Count_Period++;
@@ -42,13 +42,13 @@ void DoublePosPID::Compute()
         return;
 
     int PosTarrget_T = PosParameter.Target;
-    /*  =========================== PID的前馈计算 ===========================  */
+    //  =========================== PID的前馈计算 =========================== 
     if ((attribute.ImprovementMode & ZeroDispose) >> 2) {
         PosObservation.FeedBack_Error = MyTool::Round_ZeroDispose(PosTarrget_T, PosObservation.Target_Last, PosObservation.FeedBack_Error, attribute.Half_TurnRange);
         PosObservation.FeedBack_Out   = PosObservation.FeedBack_Error * PosParameter.KR;
     } else
         PosObservation.FeedBack_Out = (PosTarrget_T - PosObservation.Target_Last) * PosParameter.KR;
-    /*  =========================== PID的角度环计算 ===========================  */
+    //  =========================== PID的角度环计算 =========================== 
     if ((attribute.ImprovementMode & ZeroDispose) >> 2) {
         PosObservation.Error = MyTool::Round_ZeroDispose(PosTarrget_T, PosObservation.Measure, PosObservation.Error, attribute.Half_TurnRange);
     } else
@@ -74,7 +74,7 @@ void DoublePosPID::Compute()
 
     PosObservation.Output = PosObservation.Pout + PosObservation.Dout + PosObservation.FeedBack_Out;
     PosObservation.Output = MyTool::ValueF32_IntervalLimit(PosObservation.Output, PosParameter.Output_MaxLimit, 0 - PosParameter.Output_MaxLimit);
-    /*  =========================== PID的速度环计算 ===========================  */
+    //  =========================== PID的速度环计算 =========================== 
     SpeedObservation.Target = PosObservation.Output;
 
     SpeedObservation.Error = SpeedObservation.Target - SpeedObservation.Measure;
@@ -94,7 +94,7 @@ void DoublePosPID::Compute()
 
     SpeedObservation.Output = SpeedObservation.Pout + SpeedObservation.Iout + SpeedObservation.Dout + PosObservation.Iout;
     SpeedObservation.Output = MyTool::ValueF32_IntervalLimit(SpeedObservation.Output, SpeedParameter.Output_MaxLimit, 0 - SpeedParameter.Output_MaxLimit);
-    /*  =========================== 最终值的滤波 ===========================  */
+    //  =========================== 最终值的滤波 =========================== 
     if (attribute.ImprovementMode & FilterOpen) {
         float Input = SpeedObservation.Output;
         float fh    = -TD.R * TD.R * (TD.v1 - Input) - 2 * TD.R * TD.v2;
@@ -102,7 +102,7 @@ void DoublePosPID::Compute()
         TD.v2 += fh * TD.H;
         SpeedObservation.Output = TD.v1;
     }
-    /*  =========================== 电机的堵转检测 ===========================  */
+    //  =========================== 电机的堵转检测 =========================== 
     if ((attribute.ImprovementMode & BlockedProtection) >> 1) {
         if (MyTool::ArmF32_AbsoluteCompute(SpeedObservation.Output) >= BlockedParameter.Warn) {
             if (MyTool::ArmF32_AbsoluteCompute(SpeedObservation.Target - SpeedObservation.Measure) >=
@@ -115,7 +115,7 @@ void DoublePosPID::Compute()
             }
         }
     }
-    /*  =========================== 下周期预备 ===========================  */
+    //  =========================== 下周期预备 =========================== 
     PosObservation.Target_Last     = PosParameter.Target;
     PosObservation.Measure_Last[4] = PosObservation.Measure_Last[3];
     PosObservation.Measure_Last[3] = PosObservation.Measure_Last[2];
@@ -127,3 +127,4 @@ void DoublePosPID::Compute()
     SpeedObservation.Measure_Last = SpeedObservation.Measure;
     SpeedObservation.Error_Last   = SpeedObservation.Error;
 }
+*/

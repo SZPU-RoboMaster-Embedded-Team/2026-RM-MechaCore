@@ -59,10 +59,10 @@ unsigned char VofaUartSendArr[28] = {0}; // 修改数组大小为28字节，以�
 
 void VofaUartSend()
 {
-    float Ch1 = RightDownM3508Data.RPM;
-    float Ch2 = RightUpM3508Data.RPM;
-    float Ch3 = 0 - LeftUpM3508Data.RPM;
-    float Ch4 = 0 - LeftDownM3508Data.RPM;
+    float Ch1 = Motors[INDEX_RIGHT_LOAD].Feedback.RPM;
+    float Ch2 = Motors[INDEX_LEFT_LOAD].Feedback.RPM;
+    float Ch3 = Motors[INDEX_LEFT_LIFT].Feedback.RPM;
+    float Ch4 = Motors[INDEX_RIGHT_LIFT].Feedback.RPM;
 
     uint32_t special_value = 0x7f800000;
 

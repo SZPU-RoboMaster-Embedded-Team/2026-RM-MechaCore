@@ -3,10 +3,10 @@
 /* C++代码的声明 ----------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-#include "arm_math.h"
-#include "math.h"
-#include "algorithm"
-#include "stdint.h"
+#include <arm_math.h>
+#include <math.h>
+#include <algorithm>
+#include <stdint.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -41,7 +41,10 @@
 #include "RMRefereeSystem.hpp"
 #include "StringUtil.hpp"
 #include "Timer.hpp"
+#include "Buzzer.hpp"
 #include "MotorOfflineDetector.hpp"
+#include "ServoControl.hpp"
+#include "HX711.hpp"
 /* USER CODE END Includes */
 
 /* C++代码的声明 ----------------------------------------------------------*/

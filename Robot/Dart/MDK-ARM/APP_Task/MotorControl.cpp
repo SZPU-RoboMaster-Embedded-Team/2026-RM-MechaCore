@@ -1,63 +1,10 @@
 #include "InHpp.hpp"
 /*  =========================== 全局变量的初始化 ===========================  */
-FinalOut_Can_t FinalOut_Can = {0};
 
-/**
-**********************************************************************
-* @brief:      	YawM6020Control: 控制Yaw轴电机的函数
-* @param[in]: 	void
-* @retval:      void
-* @details:    	该函数用于对从其他任务传来的Yaw轴电机目标值进行PID处理
-***********************************************************************
-**/
-void YawM6020Control()
-{
-    // if(JointMotorRunMode.YawM6020 == MotorMode)
-    // {
-    //     PosPID_MotorYaw.PosObservation.Measure = YawM6020Data.Angle;
-    //     PosPID_MotorYaw.SpeedObservation.Measure = YawM6020Data.RPM;
-    //     PosPID_MotorYaw.Compute();
-    //     FinalOut_Can.YawM6020 = PosPID_MotorYaw.SpeedObservation.Output;
-    // }
-    // else if (JointMotorRunMode.YawM6020 == ImuMode)
-    // {
-    //     PosPID_ImuYaw.PosObservation.Measure = HI14UartCom.Data.Q31Angle.Yaw;
-    //     PosPID_ImuYaw.SpeedObservation.Measure = HI14UartCom.Data.Q31Gyr.Yaw;
-    //     PosPID_ImuYaw.Compute();
-    //     FinalOut_Can.YawM6020 = PosPID_ImuYaw.SpeedObservation.Output;
-    //     // if(Report.HI14.Disconnection == true)
-    //     // FinalOut_Can.YawM6020 = 0;
-    // }
-}
+// 统一电机管理对象数组
+MotorObject Motors[TOTAL_CONTROL_MOTORS];
 
-/**
-**********************************************************************
-* @brief:      	PitchM3508Control: 控制Pitch轴电机的函数
-* @param[in]: 	void
-* @retval:      void
-* @details:    	该函数用于对从其他任务传来的Pitch轴电机目标值进行PID处理
-***********************************************************************
-**/
-void PitchM3508Control()
-{
-    // if(JointMotorRunMode.PitchM3508 == MotorMode)
-    // {
-    //     PosPID_MotorPitch.PosObservation.Measure = PitchM3508Data.Angle;
-    //     PosPID_MotorPitch.SpeedObservation.Measure = PitchM3508Data.RPM;
-    //     PosPID_MotorPitch.Compute();
-    //     FinalOut_Can.PitchM3508 = PosPID_MotorPitch.SpeedObservation.Output;
-    // }
-    // else if (JointMotorRunMode.PitchM3508 == ImuMode)
-    // {
-    //     PosPID_ImuPitch.PosObservation.Measure = HI14UartCom.Data.Q31Angle.Pitch;
-    //     PosPID_ImuPitch.SpeedObservation.Measure = PitchM3508Data.RPM;
-    //     PosPID_ImuPitch.Compute();
-    //     FinalOut_Can.PitchM3508 = PosPID_ImuPitch.SpeedObservation.Output;
-    //     // if(Report.HI14.Disconnection == true)
-    //     // FinalOut_Can.PitchM3508 = 0;
-    // }
-}
-
+// MotorControl_Update: 统一更新所有受控电机
 /**
 **********************************************************************
 * @brief:      	DebounceAngleSensor: 处理AngleSensorM3508.Angle的消抖
@@ -70,6 +17,14 @@ float DebounceAngleSensor(float raw_angle) {
     static float buffer[100] = {0}; // 滑动窗口缓冲区
     static int index = 0;         // 当前索引
     static float sum = 0;         // 窗口内值的总和
+    static bool initialized = false; // 冷启动标志
+
+    // 首次调用时用真实值填满缓冲区，避免冷启动失真
+    if (!initialized) {
+        for (int i = 0; i < 100; i++) buffer[i] = raw_angle;
+        sum = raw_angle * 100;
+        initialized = true;
+    }
 
     // 更新滑动窗口
     sum -= buffer[index]; // 移除旧值
@@ -85,68 +40,108 @@ float DebounceAngleSensor(float raw_angle) {
 
 /**
 **********************************************************************
-* @brief:      	FrM3508Control: 控制摩擦轮电机的函数
+* @brief:      	MotorControl_Update: 统一更新所有电机的函数
 * @param[in]: 	void
 * @retval:      void
-* @details:    	该函数用于对从其他任务传来的摩擦轮电机目标值进行PID处理
+* @details:    	该函数用于对所有受控电机的目标值进行 PID 处理，并更新输出缓冲区
 ***********************************************************************
 **/
-// Init.cpp,PID.hpp,MotorControl.cpp
-void FrM3508Control()
+void MotorControl_Update()
 {
-    // 对AngleSensorM3508.Angle进行消抖处理
-    float smoothed_angle = DebounceAngleSensor(AngleSensorM3508.Angle);
-    SpeedPID_AngleSensorM3508.Current = smoothed_angle;
-
-    SpeedPID_RightDownFriction.Current  = RightDownM3508Data.RPM;
-    SpeedPID_RightUpFriction.Current    = RightUpM3508Data.RPM;
-    SpeedPID_LeftUpFriction.Current     = LeftUpM3508Data.RPM;
-    SpeedPID_LeftDownFriction.Current   = LeftDownM3508Data.RPM;
-    SpeedPID_YawM6020Data.Current       = AngleSensorM3508.RPM;
-    SpeedPID_SlidePlatformM2006.Current = SlidePlatformM2006.RPM;
-    SpeedPID_VerticalLiftM2006.Current  = VerticalLiftM2006.RPM;
-    //SpeedPID_AngleSensorM3508.Current   = AngleSensorM3508.Angle;
-
-    SpeedPID_RightDownFriction.Compute();
-    SpeedPID_RightUpFriction.Compute();
-    SpeedPID_LeftUpFriction.Compute();
-    SpeedPID_LeftDownFriction.Compute();
-    // SpeedPID_YawM6020Data.Compute();
-    SpeedPID_SlidePlatformM2006.Compute();
-    SpeedPID_VerticalLiftM2006.Compute();
+    // AngleSensor 的 Current 已在 CAN 回调中自动设置到 SpeedPID_AngleSensorM3508.Current
     SpeedPID_AngleSensorM3508.Compute();
 
-    SpeedPID_YawM6020Data.Target = SpeedPID_AngleSensorM3508.Final_Output;
-    //SpeedPID_YawM6020Data.Target = TdFilter(&TD_AngleSensor, SpeedPID_AngleSensorM3508.Final_Output);
-    SpeedPID_YawM6020Data.Compute();
+    // 使用统一循环更新所有电机 (已在枚举中定义的受控电机)
+    for (int i = 0; i < TOTAL_CONTROL_MOTORS; i++) {
+        // Yaw 轴目标值由角度传感器的 PID 输出决定 (内环速度控制)
+        if (i == INDEX_YAW) {
+            Motors[INDEX_YAW].SpeedPID.Target = -SpeedPID_AngleSensorM3508.Final_Output;
+        }
+        Motors[i].Update();
+    }
+}
 
-    FinalOut_Can.RightDownFriction  = SpeedPID_RightDownFriction.Final_Output;
-    FinalOut_Can.RightUpFriction    = SpeedPID_RightUpFriction.Final_Output;
-    FinalOut_Can.LeftUpFriction     = SpeedPID_LeftUpFriction.Final_Output;
-    FinalOut_Can.LeftDownFriction   = SpeedPID_LeftDownFriction.Final_Output;
-    FinalOut_Can.YawMotor6020       = SpeedPID_YawM6020Data.Final_Output;
-    FinalOut_Can.SlidePlatformM2006 = SpeedPID_SlidePlatformM2006.Final_Output;
-    FinalOut_Can.VerticalLiftM2006  = SpeedPID_VerticalLiftM2006.Final_Output;
-    // FinalOut_Can.AngleSensorM3508 = SpeedPID_AngleSensorM3508.Final_Output;
+/**
+ * @brief 初始化所有电机的 PID 参数和 TD 滤波器参数
+ * @details 集中化初始化，改名只需改枚举索引
+ */
+static void MotorsInit()
+{
+    // INDEX_RESERVED (0x201): 保留位，不初始化PID
 
-    // if(JointMotorRunMode.DialM3508 == PosMode)
-    // {
-    //     PosPID_Dial.PosObservation.Measure = DailM3508Data.Angle;
-    //     PosPID_Dial.SpeedObservation.Measure = DailM3508Data.RPM;
-    //     PosPID_Dial.Compute();
-    //     FinalOut_Can.DialM3508 = PosPID_Dial.SpeedObservation.Output;
-    // }
-    // else if(JointMotorRunMode.DialM3508 == SpeedMode)
-    // {
-    //     SpeedPID_DialM3508.Current = DailM3508Data.RPM;
-    //     SpeedPID_DialM3508.Compute();
-    //     FinalOut_Can.DialM3508 = SpeedPID_DialM3508.Final_Output;
-    // }
+    // ===== 左边升降 M2006 (0x202) =====
+    Motors[INDEX_LEFT_LIFT].SpeedPID.Final_OutputLimit = 16000;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KP_GainCoefficient = 0;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KP_GainMiniL = 150;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KP_GainMaxL = 300;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KP = 15;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KI_OutLimit = 3000;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KI_Time = 1;
+    Motors[INDEX_LEFT_LIFT].SpeedPID.KI = 0.3;
+
+    // ===== 右边上膛 M3508 (0x203) =====
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.Final_OutputLimit = 16000;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP_GainCoefficient = 0;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP_GainMiniL = 150;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP_GainMaxL = 300;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP = 17;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KI_OutLimit = 3000;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KI_Time = 1;
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.KI = 0.1;
+    Motors[INDEX_RIGHT_LOAD].Filter.R = 380;
+    Motors[INDEX_RIGHT_LOAD].Filter.H = 0.001;
+
+    // ===== 左边上膛 M3508 (0x204) =====
+    Motors[INDEX_LEFT_LOAD].SpeedPID.Final_OutputLimit = 16000;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KP_GainCoefficient = 0;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KP_GainMiniL = 150;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KP_GainMaxL = 300;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KP = 17;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KI_OutLimit = 3000;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KI_Time = 1;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.KI = 0.1;
+    Motors[INDEX_LEFT_LOAD].Filter.R = 380;
+    Motors[INDEX_LEFT_LOAD].Filter.H = 0.001;
+
+    // ===== Yaw轴 M6020 (0x205, 内环速度环) =====
+    Motors[INDEX_YAW].SpeedPID.Final_OutputLimit = 16000;
+    Motors[INDEX_YAW].SpeedPID.KP_GainCoefficient = 0;
+    Motors[INDEX_YAW].SpeedPID.KP_GainMiniL = 150;
+    Motors[INDEX_YAW].SpeedPID.KP_GainMaxL = 300;
+    Motors[INDEX_YAW].SpeedPID.KP = 13;
+    Motors[INDEX_YAW].SpeedPID.KI_OutLimit = 3000;
+    Motors[INDEX_YAW].SpeedPID.KI_Time = 1;
+    Motors[INDEX_YAW].SpeedPID.KI = 0;
+
+    // ===== 右边升降 M2006 (0x206) =====
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.Final_OutputLimit = 16000;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP_GainCoefficient = 0;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP_GainMiniL = 150;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP_GainMaxL = 300;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP = 15;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KI_OutLimit = 3000;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KI_Time = 1;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.KI = 0.3;
+
+    // ===== 拉簧调节 M3508 (0x207) =====
+    Motors[INDEX_SPRING].SpeedPID.Final_OutputLimit = 16000;
+    Motors[INDEX_SPRING].SpeedPID.KP_GainCoefficient = 0;
+    Motors[INDEX_SPRING].SpeedPID.KP_GainMiniL = 150;
+    Motors[INDEX_SPRING].SpeedPID.KP_GainMaxL = 300;
+    Motors[INDEX_SPRING].SpeedPID.KP = 10;
+    Motors[INDEX_SPRING].SpeedPID.KI_OutLimit = 3000;
+    Motors[INDEX_SPRING].SpeedPID.KI_Time = 1;
+    Motors[INDEX_SPRING].SpeedPID.KI = 0.7;
+    Motors[INDEX_SPRING].Filter.R = 380;
+    Motors[INDEX_SPRING].Filter.H = 0.001;
 }
 
 /* Private application code --------------------------------------------------*/
 void PIDControl(void *argument)
 {
+    // 集中初始化所有电机的 PID 和 TD 参数
+    MotorsInit();
+
     /* USER CODE BEGIN LED_Flashing */
     TickType_t Lasttick = xTaskGetTickCount();
     /* Infinite loop */
@@ -154,16 +149,18 @@ void PIDControl(void *argument)
         vTaskDelayUntil(&Lasttick, pdMS_TO_TICKS(1));
 
         taskDISABLE_INTERRUPTS();
-        // YawM6020Control();
-        // PitchM3508Control();
-        FrM3508Control();
+        MotorControl_Update();
         taskENABLE_INTERRUPTS();
-        RmMotorSendCanID0X1FFData(&hcan1, FinalOut_Can.YawMotor6020, FinalOut_Can.SlidePlatformM2006, FinalOut_Can.VerticalLiftM2006, 0);
+
+        // 0x200 → CAN ID 0x201~0x204: 保留, 左升降, 右上膛, 左上膛
+        RmMotorSendCanID0X200Data(&hcan1, Motors[INDEX_RESERVED].Output, Motors[INDEX_LEFT_LIFT].Output, Motors[INDEX_RIGHT_LOAD].Output, Motors[INDEX_LEFT_LOAD].Output);
 
         vTaskDelayUntil(&Lasttick, pdMS_TO_TICKS(1));
 
-        RmMotorSendCanID0X200Data(&hcan1, FinalOut_Can.RightDownFriction, FinalOut_Can.RightUpFriction, FinalOut_Can.LeftUpFriction, FinalOut_Can.LeftDownFriction);
+        // 0x1FF → CAN ID 0x205~0x208: Yaw, 右升降, 拉簧, (角度传感器不发送=0)
+        RmMotorSendCanID0X1FFData(&hcan1, Motors[INDEX_YAW].Output, Motors[INDEX_RIGHT_LIFT].Output, Motors[INDEX_SPRING].Output, 0);
     }
     /* USER CODE END LED_Flashing */
 }
 /* Private application code --------------------------------------------------*/
+

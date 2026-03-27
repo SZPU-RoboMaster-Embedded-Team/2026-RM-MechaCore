@@ -1,4 +1,4 @@
-﻿#include "InHpp.hpp"
+#include "InHpp.hpp"
 
 VofaCallBack_t VofaCallBack;
 std::vector<std::string> VofaName;
@@ -19,10 +19,10 @@ std::vector<std::string> VofaName;
 // void VofaCallBack_t::GetData(const std::vector<uint8_t> &data)
 // {
 //     // TODO: 实现数据获取逻辑
-//     VofaName.push_back("摩擦轮转速");
+//     VofaName.push_back("上膛电机转速");
 //     VofaName.push_back("Yaw轴(默认3830)");
-//     VofaName.push_back("左右丝杆");
-//     VofaName.push_back("上下推进");
+//     VofaName.push_back("升降电机转速");
+//     VofaName.push_back("拉簧/滑块位置");
 //     VofaName.push_back("启动/急停");
 
 //     // 检查帧尾是否为 0x0A
@@ -72,8 +72,8 @@ std::vector<std::string> VofaName;
 // {
 //     switch (index) {
 //         case 1:
-//             // 处理“摩擦轮转速”
-//             Dart.Set_Motor_Target(&SpeedPID_RightDownFriction.Target, value);
+//             // 处理“上膛电机转速”
+//             Dart.Set_Motor_Target(&Motors[INDEX_RIGHT_LOAD].SpeedPID.Target, value);
 //             break;
 //         case 2:
 //             // 处理 Yaw轴

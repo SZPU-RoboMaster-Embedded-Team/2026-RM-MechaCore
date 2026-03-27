@@ -32,19 +32,7 @@ typedef struct TD_t
 	float H;           
 }TD_t;
 float TdFilter(TD_t *TD,float Input);
-// extern TD_t TD_UpFriction;
-// extern TD_t TD_LeftDonwFrictionWheel;
-// extern TD_t TD_RIghtDownFrictionWheel;
-// extern TD_t TD_LeftFrictionWheel;
-// extern TD_t TD_RightFrictionWheel;
-// extern TD_t TD_VisionYaw;
-// extern TD_t TD_VisionPitch;
-
-extern TD_t TD_RightDownFriction;
-extern TD_t TD_RightUpFriction;
-extern TD_t TD_LeftUpFriction;
-extern TD_t TD_LeftDownFriction;
-extern TD_t TD_AngleSensor;
+// TD 滤波器变量已统一收入 Motors[] 数组 (MotorControl.hpp)
 
 /*TD_End-----------------------------------------------------------------------------------------------------------------*/
 
@@ -56,7 +44,7 @@ typedef struct
 	float Last_Out;
 	float Ratio;
 }LPF_Data_t;
-float LPFFilter(LPF_Data_t *LPF_Data,float Inupt);
+float LPFFilter(LPF_Data_t *LPF_Data, float Input);
 /*LPF_End-----------------------------------------------------------------------------------------------------------------*/
 
 
@@ -67,7 +55,7 @@ typedef struct
 	float Last_Out;
 	float Limit_Ratio;
 }LMF_Data_t;
-float LPFFilter(LPF_Data_t *LPF_Data,float Inupt);
+float LMFFilter(LMF_Data_t *LMF_Data, float Input);
 /*LimitFilter_End-----------------------------------------------------------------------------------------------------------------*/
 /* USER CODE END Includes */
 

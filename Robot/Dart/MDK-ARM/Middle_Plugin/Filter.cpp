@@ -45,10 +45,10 @@ float TdFilter(TD_t *TD,float Input)
 
 
 /*LPF_Begin-----------------------------------------------------------------------------------------------------------------*/
-float LPFFilter(LPF_Data_t *LPF_Data,float Inupt)
+float LPFFilter(LPF_Data_t *LPF_Data, float Input)
 {
 	float Out=0;
-	Out=(LPF_Data->Ratio*Inupt) + ((1-LPF_Data->Ratio)*(LPF_Data->Last_Out));
+	Out=(LPF_Data->Ratio*Input) + ((1-LPF_Data->Ratio)*(LPF_Data->Last_Out));
 	LPF_Data->Last_Out=Out;
 	return Out;
 }
@@ -56,13 +56,13 @@ float LPFFilter(LPF_Data_t *LPF_Data,float Inupt)
 
 
 /*LimitFilter_Begin-----------------------------------------------------------------------------------------------------------------*/
-float LMFFilter(LMF_Data_t *LMF_Data,float Inupt)
+float LMFFilter(LMF_Data_t *LMF_Data, float Input)
 {
-	float Error=fabs(Inupt-LMF_Data->Last_Out);
+	float Error=fabs(Input-LMF_Data->Last_Out);
 	if(Error<=LMF_Data->Limit_Ratio)
-	Inupt=LMF_Data->Last_Out;
-	LMF_Data->Last_Out=Inupt;
+	Input=LMF_Data->Last_Out;
+	LMF_Data->Last_Out=Input;
 	
-	return Inupt;
+	return Input;
 }
 /*LimitFilter_End-----------------------------------------------------------------------------------------------------------------*/

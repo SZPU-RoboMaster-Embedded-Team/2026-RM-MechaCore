@@ -41,124 +41,99 @@ public:
 // extern PID_Speed_Temp SpeedPID_RightFriction;
 // extern PID_Speed_Temp SpeedPID_DialM3508;
 
-extern PID_Speed_Temp SpeedPID_RightDownFriction;
-extern PID_Speed_Temp SpeedPID_RightUpFriction;
-extern PID_Speed_Temp SpeedPID_LeftUpFriction;
-extern PID_Speed_Temp SpeedPID_LeftDownFriction;
-extern PID_Speed_Temp SpeedPID_YawM6020Data;
-extern PID_Speed_Temp SpeedPID_SlidePlatformM2006;
-extern PID_Speed_Temp SpeedPID_VerticalLiftM2006;
-extern PID_Speed_Temp SpeedPID_AngleSensorM3508;
-
-//███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+/* 
+// [Legacy] 双环PID结构体，用于位置+速度级联控制 (云台/拨盘)
 typedef class DoublePosPID
 {
 public:
-/*  =========================== PID的优化功能以及属性 ===========================  */ 
-    struct
-    {
-        unsigned char ImprovementMode;
-        char Counter_Period;
-        char Count_Period;
-        int Final_OutputLimit;
-        int Half_TurnRange;
-    }attribute;
-/*  =========================== PID的角度环参数 ===========================  */   
-    struct
-    {
+    struct {
+        int   ImprovementMode;
+        int   Counter_Period;
+        int   Count_Period;
+        int   Final_OutputLimit;
+        int   Half_TurnRange;
+    } attribute;
+
+    struct {
         float KI_GainCoefficient;
-        float Output_MaxLimit;
-        int KI_TimeMiniL;
-        int KI_TimeMaxL;
-        int KI_Saturate;
-        int KI_OutLimit;
-        char  KD_Count;
-        double Target;
+        int   Output_MaxLimit;
+        int   KI_TimeMiniL;
+        int   KI_TimeMaxL;
+        int   KI_Saturate;
+        int   KI_OutLimit;
+        int   KD_Count;
+        int   Target;
         float KP;
         float KI;
         float KD;
         float KR;
-    }PosParameter;
-    struct
-    {
+    } PosParameter;
+
+    struct {
         float FeedBack_Out;
-        int FeedBack_Error;
+        float FeedBack_Error;
         float Output;
-        int Target_Last;
-        int Measure;
-        int Measure_Last[5];
-        int Error;
-        int Error_Last;
-        int KD_Error;
+        int   Target_Last;
+        int   Measure;
+        int   Measure_Last[5];
+        int   Error;
+        int   Error_Last;
+        int   KD_Error;
         float ITime;
         float Pout;
-        float Iout; 
+        float Iout;
         float Dout;
         float ITerm;
-    }PosObservation;
-/*  =========================== PID的速度环参数 ===========================  */   
-    struct
-    {
+    } PosObservation;
+
+    struct {
         float KI_GainCoefficient;
-        float Output_MaxLimit;
-        int KI_TimeMiniL;
-        int KI_TimeMaxL;
-        int KI_Saturate;
-        int KI_OutLimit;
-        char  KD_Count;
+        int   Output_MaxLimit;
+        int   KI_TimeMiniL;
+        int   KI_TimeMaxL;
+        int   KI_Saturate;
+        int   KI_OutLimit;
+        int   KD_Count;
         float KP;
         float KI;
         float KD;
         float KR;
-    }SpeedParameter;
-    struct
-    {
+    } SpeedParameter;
+
+    struct {
         float Output;
         float Target;
-        int Measure;
-        int Measure_Last;
+        float Measure;
+        float Measure_Last;
         float Error;
         float Error_Last;
         float ITime;
         float Pout;
-        float Iout; 
+        float Iout;
         float Dout;
         float ITerm;
-    }SpeedObservation;
-/*  =========================== PID的滤波器设置和堵转保护 ===========================  */  
-    struct
-    {     
-        float v1,v2; 
-        float R;           
-        float H;           
-    }TD;
-    struct PID
-    {
-        int Count;
+    } SpeedObservation;
+
+    struct {
+        float v1, v2;
+        int   R;
+        float H;
+    } TD;
+
+    struct {
+        int   Count;
         float Sensitivity;
-        int Warn;
-        int Max;
-        char Flag;
-    }BlockedParameter;
-    enum  
-    {
-        NONE = 0x00, 
-        FilterOpen = 0x01,
-        BlockedProtection = 0x02,
-        ZeroDispose = 0x04,
-    }PIDImprovement;
-/*  =========================== 以上 ===========================  */ 
+        int   Warn;
+        int   Max;
+        bool  Flag;
+    } BlockedParameter;
+
     void Compute();
-}DoublePosPID_Temp;
-extern DoublePosPID_Temp PosPID_MotorYaw;
-extern DoublePosPID_Temp PosPID_ImuYaw;
-extern DoublePosPID_Temp PosPID_MotorPitch;
-extern DoublePosPID_Temp PosPID_ImuPitch;
-extern DoublePosPID_Temp PosPID_Dial;
+} DoublePosPID_Temp;
+*/
 
+// 电机速度环PID已统一收入 Motors[] 数组 (MotorControl.hpp)
+// Yaw外环角度PID保持独立（不直接控制电机输出）
+extern PID_Speed_Temp SpeedPID_AngleSensorM3508;
 
-
-/* USER CODE END Includes */
-
-/* C++代码的声明 ----------------------------------------------------------*/
 #endif
