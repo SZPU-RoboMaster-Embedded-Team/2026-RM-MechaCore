@@ -1,18 +1,49 @@
 #include "Tools.hpp"
 #include "usart.h"
+#include "DEBUG/embedded_debug_bridge.hpp"
+
 #define DEAD_ZONE_6020 1.0f
-/**
- * @brief 用于vofa发送波形数据
- *
- * @param x1
- * @param x2
- * @param x3
- * @param x4
- * @param x5
- * @param x6
- */
+
+namespace
+{
+float WrapToRange(float angle, float range)
+{
+    if (range <= 0.0f)
+    {
+        return angle;
+    }
+
+    angle = fmodf(angle, range);
+    if (angle < 0.0f)
+    {
+        angle += range;
+    }
+    return angle;
+}
+
+float ShortestDelta(float target, float feedback, float range)
+{
+    float delta = WrapToRange(target, range) - WrapToRange(feedback, range);
+    const float half_range = range * 0.5f;
+
+    if (delta > half_range)
+    {
+        delta -= range;
+    }
+    else if (delta < -half_range)
+    {
+        delta += range;
+    }
+
+    return delta;
+}
+}
+
 void Tools_t::vofaSend(float x1, float x2, float x3, float x4, float x5, float x6)
 {
+#if EMBEDDED_DEBUG_BRIDGE_ENABLE
+    DebugBridge_PublishPowerSample(x1, x2, x3, x4, x5, x6);
+#else
     const uint8_t sendSize = 4;
 
     *((float *)&send_str2[sendSize * 0]) = x1;
@@ -23,34 +54,14 @@ void Tools_t::vofaSend(float x1, float x2, float x3, float x4, float x5, float x
     *((float *)&send_str2[sendSize * 5]) = x6;
 
     *((uint32_t *)&send_str2[sizeof(float) * (7)]) = 0x7f800000;
-    HAL_UART_Transmit_DMA(&huart6, send_str2, sizeof(float) * (7 + 1));
+    HAL_UART_Transmit_DMA(&huart1, send_str2, sizeof(float) * (7 + 1));
+#endif
 }
 
-// 过零处理
-/**
- * @brief 用于处理6020的零点
- *
- * @param expectations  期望值
- * @param feedback      反馈值
- * @param maxpos        最大值
- * @return float        处理的零点
- */
 float Tools_t::Zero_crossing_processing(float expectations, float feedback, float maxpos)
 {
-    float tempcin = expectations;
-    if (maxpos != 0)
-    {
-        tempcin = fmod(expectations, maxpos);
-        float x1 = feedback;
-        if (tempcin < 0)
-            x1 -= maxpos;
-        // 过0处理
-        if (tempcin - feedback < -maxpos / 2)
-            tempcin += maxpos;
-        if (tempcin - feedback > maxpos / 2)
-            tempcin -= maxpos;
-    }
-    return tempcin;
+    (void)feedback;
+    return WrapToRange(expectations, maxpos);
 }
 
 float Tools_t::Round_Error(float expectations, float ERR, float maxpos)
@@ -58,7 +69,6 @@ float Tools_t::Round_Error(float expectations, float ERR, float maxpos)
     double tempcin = expectations;
     if (maxpos != 0)
     {
-        // 过0处理
         if (ERR < -maxpos / 2)
             tempcin = 0;
         if (ERR > maxpos / 2)
@@ -67,70 +77,30 @@ float Tools_t::Round_Error(float expectations, float ERR, float maxpos)
     return tempcin;
 }
 
-/**
- * @brief 对最小角进行判断
- *
- * @param expectations  期望值
- * @param feedback      反馈值
- * @param speed         速度
- * @param maxspeed      最大速度
- * @param maxpos        最大角度
- * @return double       最小角度
- */
 double Tools_t::MinPosHelm(float expectations, float feedback, float *speed, float maxspeed, float maxpos)
 {
-    // x1当前位置
-    // x2当前位置的对半位置
-    // x3反馈位置
-    double x1 = 0, x2 = 0, x3 = 0;
-    double tempcin = fmod(expectations, maxpos);
-    x1 = tempcin;
-    x2 = tempcin + maxpos / 2;
-    x3 = feedback;
-    float error = expectations - feedback;
-    if (fabs(error) < DEAD_ZONE_6020) {
-        return feedback; // 如果误差在死区内，返回反馈值
-    }
-    if (tempcin < 0)
-        x3 -= maxpos;
-    // 过0处理
-    if (x1 - x3 < -maxpos / 2)
-        x1 += maxpos;
+    (void)maxspeed;
 
-    if (x1 - x3 > maxpos / 2)
-        x1 -= maxpos;
+    const float wrapped_expectation = WrapToRange(expectations, maxpos);
+    const float wrapped_feedback = WrapToRange(feedback, maxpos);
+    const float direct_delta = ShortestDelta(wrapped_expectation, wrapped_feedback, maxpos);
+    const float reverse_target = WrapToRange(wrapped_expectation + maxpos * 0.5f, maxpos);
+    const float reverse_delta = ShortestDelta(reverse_target, wrapped_feedback, maxpos);
 
-    if (x2 - x3 < -maxpos / 2)
-        x2 += maxpos;
-
-    if (x2 - x3 > maxpos / 2)
-        x2 -= maxpos;
-
-    // 两个最小角度
-    int minangle1 = 0, minangle2 = 0;
-    minangle1 = fabs(x1 - x3);
-    minangle2 = fabs(x2 - x3);
-    // 角度比较，看选择哪个角度
-    if (minangle1 <= minangle2)
+    if (fabsf(direct_delta) <= DEAD_ZONE_6020)
     {
-        tempcin = x1;
-        *speed = *speed;
+        return wrapped_feedback;
     }
-    else
+
+    if (fabsf(reverse_delta) < fabsf(direct_delta))
     {
-        tempcin = x2;
         *speed = -*speed;
+        return reverse_target;
     }
-    return tempcin;
+
+    return wrapped_expectation;
 }
 
-/**
- * @brief 获取电机的功率
- *
- * @param T 电机力矩
- * @param Vel 电机速度
- * @return double 电机机械功率
- */
 double Tools_t::GetMachinePower(double T, double Vel)
 {
     double Pm = (T * Vel) / 9.55f;
@@ -148,3 +118,7 @@ float Tools_t::clamp(float value, float maxValue, float miniValue)
     return value;
 }
 
+float Tools_t::NormalizeAngle(float angle)
+{
+    return WrapToRange(angle, 360.0f);
+}

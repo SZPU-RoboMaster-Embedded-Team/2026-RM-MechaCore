@@ -5,11 +5,11 @@
 class TD {
    public:
 
-	float u;
+    float u;
 	float x1,x2,max_x2;
 	float r,h,r2_1; 
     TD(float r = 1.0f,float max_x2 = 0,float h = 0.001f)
-	 :r(r),h(h),max_x2(max_x2)
+	 :u(0.0f),x1(0.0f),x2(0.0f),max_x2(max_x2),r(r),h(h),r2_1(0.0f)
 	{
     
     }

@@ -5,6 +5,18 @@ void TD::Calc(float u)
     this->u = u;
     this->x1 += this->x2 * this->h;
     this->x2 += (-2.0f * this->r * this->x2 - this->r * this->r * (this->x1 - this->u)) * this->h;
+
+    if (this->max_x2 > 0.0f)
+    {
+        if (this->x2 > this->max_x2)
+        {
+            this->x2 = this->max_x2;
+        }
+        else if (this->x2 < -this->max_x2)
+        {
+            this->x2 = -this->max_x2;
+        }
+    }
 }
 
 double PID::GetPidPos(Kpid_t kpid, double feedback, float max)

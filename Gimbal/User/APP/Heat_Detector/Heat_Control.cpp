@@ -25,10 +25,15 @@ void HeatController::UpDate() {
             // 计算电流差并加入滑动窗口检测
             float currentDiff = frictionRightCurrent - frictionLeftCurrent;
             bool isBeyond = currentDetector.addValue(currentDiff);
+            fireRisingEdgeDetector.update(isBeyond ? 1U : 0U);
+            const uint32_t nowTick = HAL_GetTick();
+            const bool fireDetected = fireRisingEdgeDetector.getRisingEdge() &&
+                (lastFireTime == 0U || (nowTick - lastFireTime) >= MIN_FIRE_INTERVAL_MS);
             
             // 检测到击发，累加热量和计数
-            if (isBeyond) {
+            if (fireDetected) {
                 currentDetector.reset();
+                lastFireTime = nowTick;
                 currentHeat += 10.0f;
                 fireCount++;
             }
@@ -45,6 +50,8 @@ void HeatController::UpDate() {
             
             // 速度低于阈值，切换到失能状态
             if (velDiff < CUR_VEL_THRESHOLD) {
+                currentDetector.reset();
+                fireRisingEdgeDetector.update(0U);
                 Set_Status(DISABLE);
             }
             

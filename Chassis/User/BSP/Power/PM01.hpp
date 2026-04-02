@@ -5,6 +5,7 @@
 #include "../BSP/StaticTime.hpp" //静态定时器
 #include "../APP/Referee/RM_RefereeSystem.h"
 #include "../BSP/stdxxx.hpp"
+#include "../HAL/CAN/can_hal.hpp"
 #include "can.h"
 #include "../Task/CommunicationTask.hpp"
 #include "../BSP/state_watch.hpp"

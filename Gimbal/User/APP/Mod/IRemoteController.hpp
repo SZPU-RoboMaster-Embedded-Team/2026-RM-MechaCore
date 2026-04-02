@@ -19,6 +19,7 @@ class IRemoteController
     virtual bool isLaunchMode() const = 0;
     virtual bool isKeyboardMode() const = 0;
     virtual bool isVisionFireMode() const = 0;
+    virtual bool isRuneMode() const = 0;
     virtual bool isStopMode() const = 0;
 
     // 底盘模式

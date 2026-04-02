@@ -101,7 +101,11 @@ namespace Chassis
  */
 inline bool Universal()
 {
+#if CONTROL_SIG == 1
+    return Dir_Event.getDir_Communication() && Gimbal_to_Chassis_Data.getUniversal();
+#else
     return (dr16.switchLeft() == Dr16::Switch::UP || Gimbal_to_Chassis_Data.getUniversal());
+#endif
 }
 
 /**
@@ -113,8 +117,14 @@ inline bool Universal()
  */
 inline bool Follow()
 {
+#if CONTROL_SIG == 1
+    return Dir_Event.getDir_Communication() &&
+           !Gimbal_to_Chassis_Data.getKeyBoard() &&
+           Gimbal_to_Chassis_Data.getFollow();
+#else
     return ((dr16.switchLeft() == Dr16::Switch::MIDDLE) && (dr16.switchRight() != Dr16::Switch::MIDDLE) ||
             Gimbal_to_Chassis_Data.getFollow());
+#endif
 }
 
 /**
@@ -126,8 +136,12 @@ inline bool Follow()
  */
 inline bool Rotating()
 {
+#if CONTROL_SIG == 1
+    return Dir_Event.getDir_Communication() && Gimbal_to_Chassis_Data.getRotating();
+#else
     return (dr16.switchLeft() == Dr16::Switch::DOWN && dr16.switchRight() == Dr16::Switch::MIDDLE 
             || Gimbal_to_Chassis_Data.getRotating());
+#endif
 }
 
 /**
@@ -138,8 +152,12 @@ inline bool Rotating()
  */
 inline bool KeyBoard()
 {
+#if CONTROL_SIG == 1
+    return Dir_Event.getDir_Communication() && Gimbal_to_Chassis_Data.getKeyBoard();
+#else
     return ((dr16.switchLeft() == Dr16::Switch::MIDDLE) && (dr16.switchRight() == Dr16::Switch::MIDDLE) ||
             Gimbal_to_Chassis_Data.getKeyBoard());
+#endif
 }
 
 /**
@@ -150,12 +168,15 @@ inline bool KeyBoard()
  */
 inline bool Stop()
 {
+#if CONTROL_SIG == 1
+    return !Dir_Event.getDir_Communication() || Gimbal_to_Chassis_Data.getStop();
+#else
     if (!BSP::Remote::dr16.isDrOnline()) {
         return true;
     }
     return ((dr16.switchLeft() == Dr16::Switch::DOWN) && (dr16.switchRight() == Dr16::Switch::DOWN) ||
             Gimbal_to_Chassis_Data.getStop() || !Dir_Event.getDir_Communication() || Dir_Event.GetDir_Remote() == false);
-    //                                         
+#endif
 }
 
 /**
@@ -166,7 +187,11 @@ inline bool Stop()
  */
 inline bool Move()
 {
+#if CONTROL_SIG == 1
+    return false;
+#else
     return ((dr16.switchLeft() == Dr16::Switch::UP) && (dr16.switchRight() == Dr16::Switch::MIDDLE));
+#endif
 }
 } // namespace Chassis
 

@@ -14,7 +14,8 @@ Tools_t Tools;
  * @param x5
  * @param x6
  */
-void Tools_t::vofaSend(float x1, float x2, float x3, float x4, float x5, float x6)
+void Tools_t::vofaSend(float x1, float x2, float x3, float x4, float x5, float x6, float x7, float x8, float x9,
+                       float x10)
 {
     const uint8_t sendSize = 4;
 
@@ -24,9 +25,13 @@ void Tools_t::vofaSend(float x1, float x2, float x3, float x4, float x5, float x
     *((float *)&send_str2[sendSize * 3]) = x4;
     *((float *)&send_str2[sendSize * 4]) = x5;
     *((float *)&send_str2[sendSize * 5]) = x6;
+    *((float *)&send_str2[sendSize * 6]) = x7;
+    *((float *)&send_str2[sendSize * 7]) = x8;
+    *((float *)&send_str2[sendSize * 8]) = x9;
+    *((float *)&send_str2[sendSize * 9]) = x10;
 
-    *((uint32_t *)&send_str2[sizeof(float) * (7)]) = 0x7f800000;
-    HAL_UART_Transmit_DMA(&huart6, send_str2, sizeof(float) * (7 + 1));
+    *((uint32_t *)&send_str2[sizeof(float) * 10]) = 0x7f800000;
+    HAL_UART_Transmit_DMA(&huart6, send_str2, sizeof(float) * 11);
 }
 
 // 过零处理
@@ -147,4 +152,35 @@ float Tools_t::clamp(float value, float maxValue, float minValue)
     return value;
 }
 
+/**
+ * @brief 计算角度差值（带过零处理）
+ * 计算从current到target的最短路径角度差，自动处理边界跳变
+ * 
+ * @param target     目标角度（可以是累积角度）
+ * @param current    当前角度（限制在-halfRange到+halfRange范围内）
+ * @param halfRange  半范围（例如180.0f表示±180度范围）
+ * @return float     角度差值，范围在-halfRange到+halfRange之间
+ */
+float Tools_t::AngleDiffWithWrapping(float target, float current, float halfRange)
+{
+    float fullRange = halfRange * 2.0f;
+    
+    // 将目标角度归一化到 -halfRange ~ +halfRange 范围
+    float normalized_target = fmod(target, fullRange);
+    if (normalized_target > halfRange)
+        normalized_target -= fullRange;
+    else if (normalized_target < -halfRange)
+        normalized_target += fullRange;
+    
+    // 计算角度差
+    float diff = normalized_target - current;
+    
+    // 过零处理：选择最短路径
+    if (diff > halfRange)
+        diff -= fullRange;
+    else if (diff < -halfRange)
+        diff += fullRange;
+    
+    return diff;
+}
 

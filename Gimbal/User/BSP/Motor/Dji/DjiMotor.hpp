@@ -116,17 +116,17 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
      * @param han           Can句柄
      * @param pTxMailbox    邮
      */
-    void sendCAN()
+    bool sendCAN()
     {
         // 修改此处以适应新的CAN接口
-        HAL::CAN::Frame frame;
+        HAL::CAN::Frame frame{};
         frame.id = send_idxs_;
         frame.dlc = 8;
         memcpy(frame.data, msd.data, 8);
         frame.is_extended_id = false;
         frame.is_remote_frame = false;
         
-        HAL::CAN::get_can_bus_instance().get_can2().send(frame);
+        return HAL::CAN::get_can_bus_instance().get_can2().send(frame);
     }
 
   protected:

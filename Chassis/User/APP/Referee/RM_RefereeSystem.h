@@ -89,8 +89,14 @@ struct __attribute__((packed)) ext_power_heat_data_t
     float chassis_power;
     uint16_t chassis_power_buffer;
     uint16_t shooter_id1_17mm_cooling_heat;
-    uint16_t shooter_id2_17mm_cooling_heat;
     uint16_t shooter_id1_42mm_cooling_heat;
+};
+struct __attribute__((packed)) ext_shoot_data_t
+{ 
+ uint8_t bullet_type; 
+ uint8_t shooter_number; 
+ uint8_t launching_frequency; 
+ float initial_speed; 
 };
 // 0x0301 机器人间交互数据
 struct __attribute__((packed)) ext_student_interactive_header_data_t // 交互数据接收信息：0x0301
@@ -205,6 +211,8 @@ extern bool RM_RefereeSystemDirFlag;
 extern RM_RefereeSystem::ext_game_robot_status_t ext_power_heat_data_0x0201;
 // 0x0202 实时功率热量数据
 extern RM_RefereeSystem::ext_power_heat_data_t ext_power_heat_data_0x0202;
+// 0x207 发射机构Hz，初速度
+extern RM_RefereeSystem::ext_shoot_data_t ext_shoot_data_0x0207;
 // 0x0301 机器人间交互数据
 extern RM_RefereeSystem::graphic_data_struct_t graphic_data_struct_0x0301;
 // 0x0303 机器人间交互数据

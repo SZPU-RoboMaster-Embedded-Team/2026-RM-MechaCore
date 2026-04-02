@@ -367,10 +367,13 @@ namespace Alg::CalculationBase
                     Motor_wheel[i] = tmp_velocity_modulus * 60.0f / (2.0f * M_PI); // rad/s转RPM
 
                     // 根据速度的xy分量分别决定舵向电机角度
-                    if (tmp_velocity_modulus == 0.0f)
+                    if (tmp_velocity_modulus < 0.05f)
                     {
+                        Motor_direction[i] = current_steer_angles[i]; // 速度过小，保持当前角度，避免除零问题
+                        Motor_wheel[i] = 0.0f; // 速度过小，直接设为0
                         // 排除除零问题，保持当前角度
-                        Motor_direction[i] = atan2f((R * cosf(Wheel_Azimuth[i])), (-R * sinf(Wheel_Azimuth[i]))) + Phase[i];
+                        //Motor_direction[i] = atan2f((R * cosf(Wheel_Azimuth[i])), (-R * sinf(Wheel_Azimuth[i]))) + Phase[i];
+                        //Motor_direction[i] = current_steer_angles[i];
                     }
                     else
                     {

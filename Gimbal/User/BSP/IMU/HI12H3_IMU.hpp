@@ -216,6 +216,41 @@ class HI12
      * @return float 
      */
     float getAddYaw();
+    
+    /**
+     * @brief 获取四元数W
+     * 
+     * @return float 
+     */
+    float getQuat_w();
+
+    /**
+     * @brief 获取四元数X
+     * 
+     * @return float 
+     */
+    float getQuat_x();
+
+    /**
+     * @brief 获取四元数Y
+     * 
+     * @return float 
+     */
+    float getQuat_y();
+
+    /**
+     * @brief 获取四元数Z
+     * 
+     * @return float 
+     */
+    float getQuat_z();
+
+    float Quat_x;  // 四元数X
+
+    float Quat_y;  // 四元数Y
+
+    float Quat_z;  // 四元数Z
+
 };
 
 inline float HI12::getYaw()
@@ -265,6 +300,25 @@ inline float HI12::getAccZ()
 inline float HI12::getAddYaw()
 {
     return addYaw.add_angle;
+}
+inline float HI12::getQuat_w()
+{
+    return quat.Quat_w;
+}
+
+inline float HI12::getQuat_x()
+{
+    return quat.Quat_x;
+}
+
+inline float HI12::getQuat_y()
+{
+    return quat.Quat_y;
+}
+
+inline float HI12::getQuat_z()
+{
+    return quat.Quat_z;
 }
 
 // 全局实例

@@ -27,9 +27,9 @@ void Init()
 
     // HAL_TIM_Base_Start_IT(&htim7);
 
-    // // ?????
+    // // 定时器功能预留
     // HAL_TIM_Base_Start(&htim4);
-    // // ??PWM??
+    // // PWM功能预留
     // HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
 
     // HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);

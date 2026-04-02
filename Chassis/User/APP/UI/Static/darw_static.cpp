@@ -3,161 +3,190 @@
 #include "../BSP/Power/PM01.hpp"
 #include "../BSP/SuperCap/SuperCap.hpp"
 #include <stdio.h>
+#include <math.h>
 uint16_t x = 128;
 uint16_t y = 228;
 
 namespace UI::Static
 {
+    // …Ë÷√æ≤Ã¨≤„ƒ¨»œªÊ÷∆ Ù–‘°£
     void darw_static::setLayer()
     {
-        // ÁûÑÂáÜÁ∫ø
+
         RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateAdd);
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorCyan);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(1);
     }
 
-    // void darw_static::setNowPower()
-    // {
-    //     RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateAdd); // ËÆæÁΩÆ‰øÆÊîπ
-    //     RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
-    //     RM_RefereeSystem::RM_RefereeSystemSetStringSize(15);
-    //     RM_RefereeSystem::RM_RefereeSystemSetWidth(5);
-    //     UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("P", 1, "Power:", ZM_of_X, ZM_of_Y));
-    //     RM_RefereeSystem::RM_RefereeSystemClsToop();
-    // }
-
     void darw_static::PitchLine()
     {
+        // ÷ÿ–¬≥ı ºªØæ≤Ã¨UI«∞œ»…œÀ¯≤¢«Âø’Õº‘™∂”¡–°£
         UI_send_queue.is_up_ui = false;
-        UI_send_queue.size     = 0; // Â§ç‰Ωç
-        // //	//ËßÑÂàô
-        // //	//0Âè∑ÂõæÂ±ÇÁªôÈùôÊÄÅÂõæÂ±Ç‰ΩøÁî®ÔºåÁî®‰∫éÁªòÂà∂ÈùôÊÄÅ‰∏çÊîπÂõæÂΩ¢
+        UI_send_queue.size     = 0;
+        UI_send_queue.wz_size  = 0;
+
         RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateAdd);
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorCyan);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(1);
 
-        // ÁûÑÂáÜÁÇπ
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorCyan);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(5);
         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("W", 0, 954, 495, 6));
-
-        // ÁûÑÂáÜÁ∫ø
-        // UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("H", 0, Win_W * 0.5, 0, Win_W * 0.5, Win_H));
-        // UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("high", 0, aim_x, aim_y, aim_x + 520, aim_y));
-        // UI_send_queue.add(
-        //     RM_RefereeSystem::RM_RefereeSystemSetLine("mid", 0, aim_x + 100, aim_y - 75, aim_x + 420, aim_y - 75));
-        // UI_send_queue.add(
-        //     RM_RefereeSystem::RM_RefereeSystemSetLine("low", 0, aim_x + 160, aim_y - 150, aim_x + 360, aim_y - 150));
-
-        //		setNowPower();
-
-        /***************************Âä®ÊÄÅUIÂàùÂßãÂåñ***************************/
-        // pitchÂàùÂßãÂåñ
-        // ÁªòÂà∂pitchÊåáÁ§∫
-        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorAmaranth);
+        /*************************** Dynamic UI Init **************************/
+                           
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("power", 1, 100, 100 + 2, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("pwr", 1, 90, 90 + 2, 960, 540, 380, 380));
 
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorRedAndBlue);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("limPower", 1, 120, 120 + 2, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("lmp", 1, 90, 90 + 2, 960, 540, 380, 380));
 
-        // Ë∂ÖÁîµÂàùÂßãÂåñ
+        // π¶¬ øÃ∂»£∫0~120£¨√ø 10W “ª∏Ò£®øÃ∂»œﬂ +  ˝÷µ£©°£
+        for (int value = 0; value <= 120; value += 10) {
+            float angle = 130.0f - value * (80.0f / 120.0f);
+            float rad   = (angle - 90.0f) * 3.1415926f / 180.0f;
+
+            int16_t x0 = static_cast<int16_t>(960 + 368 * cosf(rad));
+            int16_t y0 = static_cast<int16_t>(540 + 368 * sinf(rad));
+            int16_t x1 = static_cast<int16_t>(960 + 394 * cosf(rad));
+            int16_t y1 = static_cast<int16_t>(540 + 394 * sinf(rad));
+            int16_t xt = static_cast<int16_t>(960 + 430 * cosf(rad));
+            int16_t yt = static_cast<int16_t>(540 + 430 * sinf(rad));
+
+            char tick_name[4] = {0};
+            snprintf(tick_name, sizeof(tick_name), "t%02d", value / 10);
+
+            RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
+            RM_RefereeSystem::RM_RefereeSystemSetWidth(2);
+            UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine(tick_name, 1, x0, y0, x1, y1));
+
+        }
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("cd_Init", 3, 271, 310, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("scp", 3, 271, 310, 960, 540, 380, 380));
 
-        // Â∞èÈôÄËû∫ÂàùÂßãÂåñ
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("gyro_Init", 2, 0, 360, 1450, 750, 80, 80));
 
-        // ËΩ¨ÈÄüÊù°ÂàùÂßãÂåñ
         RM_RefereeSystem::RM_RefereeSystemSetWidth(35);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("dp1", 0, 1450, 690, 1450, 750 + 61));
 
-        // ÁúüÂÆûÂäüÁéá
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         RM_RefereeSystem::RM_RefereeSystemSetStringSize(15);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(2);
         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("p", 0, BSP::SuperCap::cap.getOutPower(), ZM_of_X, ZM_of_Y));
 
-//        // ËßÜËßâÊ®°ÂºèËÉåÊôØ
+
 //        RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
 //        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("vim", 0, 166, 193, 956, 520, 360, 360));
 
-        // ËßÜËßâÁÇπ
+
+        //  ”æıµ„≥ı ºŒª÷√£∫
+        // AimX œ»◊ˆ -140 »•¡„∆´£¨AimX=0 ∂‘”¶∆¡ƒª÷––ƒ°£
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorCyan);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, Gimbal_to_Chassis_Data.getAimX() * 2.72 + 615, Gimbal_to_Chassis_Data.getAimY() * 2.05 + 265, 12));
+        int16_t aim_x_centered = static_cast<int16_t>(Gimbal_to_Chassis_Data.getAimX()) - 140;
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsa", 4, aim_x_centered * 2.72 + 960, Gimbal_to_Chassis_Data.getAimY() * 2.05 + 265, 12));
 
-        /***************************ÁªòÂà∂ÈùôÊÄÅUI***************************/
-        // pitchÂàªÂ∫¶
+        /*************************** Static UI Draw ***************************/
+
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_130", 0, 50, 51, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a50", 0, 50, 51, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_120", 1, 60, 61, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a60", 1, 60, 61, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_110", 2, 70, 71, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a70", 2, 70, 71, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_100", 3, 80, 81, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a80", 3, 80, 81, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_90", 4, 90, 91, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a90", 4, 90, 91, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_80", 5, 100, 101, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a10", 5, 100, 101, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_60", 6, 110, 111, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a11", 6, 110, 111, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_50", 7, 120, 121, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a12", 7, 120, 121, 960, 540, 380, 380));
         RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_50", 8, 130, 131, 960, 540, 380, 380));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("a13", 8, 130, 131, 960, 540, 380, 380));
 
-        // pitchÂàªÂ∫¶Êï∞Â≠ó
+
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
-        RM_RefereeSystem::RM_RefereeSystemSetStringSize(10);
-        RM_RefereeSystem::RM_RefereeSystemSetWidth(2);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_130", 0, 120, 1210, 770));
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_110", 1, 90, 1270, 660));
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_90", 2, 60, 1300, 540));
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_70", 3, 30, 1280, 420));
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_50", 4, 0, 1210, 310));
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(14);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        for (int value = 0; value <= 120; value += 10) {
+            float angle = 130.0f - value * (80.0f / 120.0f);
+            float rad   = (angle - 90.0f) * 3.1415926f / 180.0f;
+            //  ˝÷µ∑≈‘⁄øÃ∂»œﬂƒ⁄≤‡£®øø◊Û£©£¨±‹√‚∫ÕÕ‚≤‡¿˙ ∑±Í◊¢÷ÿµ˛°£
+            int16_t xt  = static_cast<int16_t>(960 + 338 * cosf(rad));
+            int16_t yt  = static_cast<int16_t>(540 + 338 * sinf(rad));
+            char num_name[4] = {0};
+            snprintf(num_name, sizeof(num_name), "w%02d", value / 10);
+            UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt(num_name, 0, 120 - value, xt, yt));
+        }
+        char fire_label[] = "fire_num:0";
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(16);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("fil", 9, fire_label, 1470, 510));
         //        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_40", 5, 40, ZM_of_X, ZM_of_Y));
 
-        // Ë∂ÖÁîµ‰∏äÈôê‰Ωç
+
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(5);
         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("cd1", 2, 570, 540, 595, 540));
-        // Ë∂ÖÁîµ‰∏ãÈôê‰Ωç
+
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(5);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("cd2", 2, 673, 800, 690, 785));
+        // UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("cd2", 2, 673, 800, 690, 785));
 
-        // Â∞èÈôÄËû∫ÂÜÖÂúÜ
-        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
-        RM_RefereeSystem::RM_RefereeSystemSetWidth(1);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("xtl_in", 2, 1450, 750, 67));
 
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(1);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetRectangle("dp9", 2, 1450 - 20, 750 - 61, 1450 + 20, 750 + 62));
+
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(1);
 
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("vis", 2, 166, 193, 956, 520, 360, 360));
+        // UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("vis", 2, 166, 193, 956, 520, 360, 360));
+
+        // æ≤Ã¨Œƒ±æ”Î∑ΩøÚ≥ı ºªØ£∫≥ı º»´≤ø¬Ã…´£¨∂ØÃ¨≤„‘Ÿ∞¥◊¥Ã¨∏ƒª∆…´∏ﬂ¡¡°£
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(4);
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetRectangle("mdr", 2, 710, 130, 1210, 70));
 
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
-        RM_RefereeSystem::RM_RefereeSystemSetWidth(600);
-        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetRectangle("Mode", 2, 660, 220, 1260, 100));
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(4);
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetRectangle("str", 2, 800, 190, 1120, 130));
 
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
-        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "NOR", 730, 180));
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(18);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("mfr", 7, "FRI", 858, 160));
+
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(18);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("mvs", 7, "VIS", 1008, 160));
+
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(18);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("mnr", 8, "NOR", 783, 100));
         
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
-        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "ROT", 930, 180));
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(18);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("mrt", 8, "ROT", 933, 100));
 
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
-        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "FOL", 1130, 180));
+        RM_RefereeSystem::RM_RefereeSystemSetStringSize(18);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("mfl", 8, "FOL", 1083, 100));
 
-        UI_send_queue.is_up_ui = true;
+        // ◊¢“‚£∫’‚¿Ô÷ª∏∫‘»Î∂”£¨≤ª‘⁄¥À¥¶Ω‚À¯∂ØÃ¨≤„°£
+        // ”… RefeeTask ‘⁄æ≤Ã¨∂”¡–’Ê’˝«Âø’∫Û‘Ÿ÷√ is_up_ui=true£¨
+        // ±‹√‚∂ØÃ¨ Revise œ»”⁄æ≤Ã¨ Add µΩ¥Ôµº÷¬°∞ŒﬁŒÔø…∏ƒ°±°£
+        UI_send_queue.is_up_ui = false;
 
 
     }

@@ -17,7 +17,7 @@
 
 Dir Dir_Event;
 
-auto LED_Event    = std::make_unique<LED>(&Dir_Event); // 让LED灯先订阅，先亮灯再更新蜂鸣器
+auto LED_Event    = std::make_unique<LED>(&Dir_Event);     // 先更新 LED，再更新蜂鸣器
 auto Buzzer_Event = std::make_unique<Buzzer>(&Dir_Event);
 
 void DirUpdata()
@@ -28,26 +28,26 @@ void DirUpdata()
 void EventTask(void *argument)
 {
     osDelay(500);
-    for (;;) {
-
+    for (;;)
+    {
+        Dir_Event.UpEvent();
         Dir_Event.Notify();
         osDelay(5);
     }
 }
+
 // bool Dir::Dir_Remote()
 // {
-// 	// BSP::Remote::dr16.state_watch_.UpdateTime();
+//     // BSP::Remote::dr16.state_watch_.UpdateTime();
 //     // BSP::Remote::dr16.state_watch_.CheckStatus();
-	
 //     Dir_Event.DirData.Dr16 = BSP::Remote::dr16.isDrOnline();
 //     return DirData.Dr16;
 // }
 
 /**
- * @brief 检测舵向电机断联状态
- * 
+ * @brief 检测舵向电机是否掉线
  * @return true 所有舵向电机在线
- * @return false 有舵向电机离线
+ * @return false 存在舵向电机掉线
  */
 bool Dir::Dir_String()
 {
@@ -56,7 +56,7 @@ bool Dir::Dir_String()
         DirData.String[i] = BSP::Motor::LK::Motor4005.isMotorOnline(i + 1);
         if (!DirData.String[i]) {
             allOnline = false;
-            // 请求蜂鸣器报警，鸣叫电机ID次数
+            // 请求蜂鸣器按电机编号进行提示
             BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestMotorRing(i + 1);
         }
     }
@@ -64,10 +64,9 @@ bool Dir::Dir_String()
 }
 
 /**
- * @brief 检测轮向电机断联状态
- * 
+ * @brief 检测轮向电机是否掉线
  * @return true 所有轮向电机在线
- * @return false 有轮向电机离线
+ * @return false 存在轮向电机掉线
  */
 bool Dir::Dir_Wheel()
 {
@@ -76,7 +75,7 @@ bool Dir::Dir_Wheel()
         DirData.Wheel[i] = BSP::Motor::Dji::Motor3508.isMotorOnline(i + 1);
         if (!DirData.Wheel[i]) {
             allOnline = false;
-            // 请求蜂鸣器报警，鸣叫电机ID次数
+            // 请求蜂鸣器按电机编号进行提示
             BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestMotorRing(i + 1);
         }
     }
@@ -85,16 +84,13 @@ bool Dir::Dir_Wheel()
 
 bool Dir::Dir_MeterPower()
 {
-    // bool Dir = MeterPower.isPmOnline();
-
-    // DirData.MeterPower = Dir;
-
-    // return Dir;
+    bool Dir = BSP::Power::pm01.isPmOnline();
+    DirData.MeterPower = Dir;
+    return Dir;
 }
 
 /**
- * @brief 检测板间通信断联状态
- * 
+ * @brief 检测板间通信是否掉线
  * @return true 板间通信在线
  * @return false 板间通信离线
  */
@@ -102,7 +98,7 @@ bool Dir::Dir_Communication()
 {
     DirData.Communication = Gimbal_to_Chassis_Data.isConnectOnline();
     if (!DirData.Communication) {
-        // 请求蜂鸣器报警，板间通信鸣叫3次长音
+        // 请求蜂鸣器进行板间通信掉线提示
         BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestCommunicationRing();
     }
     return DirData.Communication;
@@ -110,11 +106,11 @@ bool Dir::Dir_Communication()
 
 bool Dir::Dir_SuperCap()
 {
-    // bool Dir = BSP::SuperCap::cap.isScOnline() && BSP::Power::pm01.isPmOnline();
-
-    // DirData.SuperCap = Dir;
-
-    // return Dir;
+    // SuperCap status is used by the LED/buzzer path and should only reflect
+    // the capacitor board online state, independent of PM01 telemetry.
+    bool Dir = BSP::SuperCap::cap.isScOnline();
+    DirData.SuperCap = Dir;
+    return Dir;
 }
 
 bool Dir::Init_Flag()
@@ -124,19 +120,18 @@ bool Dir::Init_Flag()
 }
 
 /**
- * @brief 更新事件
- *
+ * @brief 更新事件状态
  */
 void Dir::UpEvent()
 {
-    //Dir_Remote();
+    // Dir_Remote();
     Dir_String();
     Dir_Wheel();
-    //Dir_MeterPower();
+    // Dir_MeterPower();
     Dir_Communication();
     Init_Flag();
-    //Dir_SuperCap();
-    
-    // 更新蜂鸣器管理器
+    Dir_SuperCap();
+
+    // 更新蜂鸣器请求队列
     BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().update();
 }

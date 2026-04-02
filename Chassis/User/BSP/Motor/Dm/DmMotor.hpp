@@ -1,10 +1,13 @@
 #pragma once
+
 #include "../MotorBase.hpp"
 #include "../../../HAL/CAN/can_hal.hpp"
 #include "../BSP/state_watch.hpp"
+
 namespace BSP::Motor::DM
 {
-// 参数结构体定义
+
+// DM 电机在 MIT / 速度位置模式下使用的参数范围定义。
 struct Parameters
 {
     float P_MIN = 0.0;
@@ -27,67 +30,54 @@ struct Parameters
 
     static constexpr double rad_to_deg = 1 / 0.017453292519611;
 
-    // 构造函数带参数计算
     /**
-     * @brief Construct a new Parameters object
-     *
-     * @param pmin 位置 最小值
-     * @param pmax 位置 最大值
-     * @param vmin 速度 最小值
-     * @param vmax 速度 最大值
-     * @param tmin 力矩 最小值
-     * @param tmax 力矩 最大值
-     * @param kpmin Kp 最小值
-     * @param kpmax Kp 最大值
-     * @param kdmin Kd 最小值
-     * @param kdmax Kd 最大值
+     * @brief 构造参数对象。
      */
     Parameters(float pmin, float pmax, float vmin, float vmax, float tmin, float tmax, float kpmin, float kpmax,
                float kdmin, float kdmax)
-        : P_MIN(pmin), P_MAX(pmax), V_MIN(vmin), V_MAX(vmax), T_MIN(tmin), T_MAX(tmax), KP_MIN(kpmin), KP_MAX(kpmax),
-          KD_MIN(kdmin), KD_MAX(kdmax)
+        : P_MIN(pmin),
+          P_MAX(pmax),
+          V_MIN(vmin),
+          V_MAX(vmax),
+          T_MIN(tmin),
+          T_MAX(tmax),
+          KP_MIN(kpmin),
+          KP_MAX(kpmax),
+          KD_MIN(kdmin),
+          KD_MAX(kdmax)
     {
     }
 };
 
 /**
- * @brief 达妙电机的基类
+ * @brief DM 电机基类。
  *
- * @tparam N 电机总数
+ * @tparam N 管理的电机数量。
  */
-template <uint8_t N> class DMMotorBase : public MotorBase<N>
+template <uint8_t N>
+class DMMotorBase : public MotorBase<N>
 {
   protected:
     /**
-     * @brief Construct a new Dji Motor Base object
+     * @brief 构造一组 DM 电机对象。
      *
-     * @param can_id can的初始id 比如3508与2006就是0x200
-     * @param params 初始化转换国际单位的参数
+     * @param Init_id CAN 基准 ID。
+     * @param recv_ids 接收相对 ID 列表。
+     * @param send_ids 每个电机对应的发送 ID。
+     * @param params 范围与换算参数。
      */
     DMMotorBase(uint16_t Init_id, const uint8_t (&recv_ids)[N], const uint32_t (&send_ids)[N], Parameters params)
         : init_address(Init_id), params_(params)
     {
         for (uint8_t i = 0; i < N; ++i)
         {
-            recv_idxs_[i] = recv_ids[i]; // 接收ID索引
-            send_idxs_[i] = send_ids[i]; // 发送ID存储
+            recv_idxs_[i] = recv_ids[i];
+            send_idxs_[i] = send_ids[i];
         }
     }
 
-    // 构造函数带参数计算
     /**
-     * @brief Construct a new Parameters object
-     *
-     * @param pmin 位置 最小值
-     * @param pmax 位置 最大值
-     * @param vmin 速度 最小值
-     * @param vmax 速度 最大值
-     * @param tmin 力矩 最小值
-     * @param tmax 力矩 最大值
-     * @param kpmin Kp 最小值
-     * @param kpmax Kp 最大值
-     * @param kdmin Kd 最小值
-     * @param kdmax Kd 最大值
+     * @brief 为派生类提供参数构造辅助函数。
      */
     Parameters CreateParams(float pmin, float pmax, float vmin, float vmax, float tmin, float tmax, float kpmin,
                             float kpmax, float kdmin, float kdmax) const
@@ -96,47 +86,44 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
     }
 
   private:
+    // 将协议中的无符号整数字段还原为指定范围内的浮点数。
     float uint_to_float(int x_int, float x_min, float x_max, int bits)
     {
-        /// converts unsigned int to float, given range and number of bits ///
         float span = x_max - x_min;
         float offset = x_min;
         return ((float)x_int) * span / ((float)((1 << bits) - 1)) + offset;
     }
 
+    // 将浮点数压缩为协议可发送的无符号整数字段。
     int float_to_uint(float x, float x_min, float x_max, int bits)
     {
-        /// Converts a float to an unsigned int, given range and number of bits///
         float span = x_max - x_min;
         float offset = x_min;
         return (int)((x - offset) * ((float)((1 << bits) - 1)) / span);
     }
 
     /**
-     * @brief 将反馈数据转换为国际单位
+     * @brief 将原始反馈值转换为工程单位。
      *
-     * @param i 存结构体的id号
+     * @param i 电机槽位下标。
      */
     void Configure(size_t i)
     {
         const auto &params = params_;
 
         this->unit_data_[i].angle_Rad = uint_to_float(feedback_[i].angle, params.P_MIN, params.P_MAX, 16);
-
         this->unit_data_[i].velocity_Rad = uint_to_float(feedback_[i].velocity, params.V_MIN, params.V_MAX, 12);
-
         this->unit_data_[i].torque_Nm = uint_to_float(feedback_[i].torque, params.T_MIN, params.T_MAX, 12);
-
         this->unit_data_[i].temperature_C = feedback_[i].T_Mos;
-
         this->unit_data_[i].angle_Deg = this->unit_data_[i].angle_Rad * params_.rad_to_deg;
 
         double lastData = this->unit_data_[i].last_angle;
         double Data = this->unit_data_[i].angle_Deg;
 
-        if (Data - lastData < -180) // 正转
+        // 处理圈数跳变，保持累计角度连续。
+        if (Data - lastData < -180)
             this->unit_data_[i].add_angle += (360 - lastData + Data);
-        else if (Data - lastData > 180) // 反转
+        else if (Data - lastData > 180)
             this->unit_data_[i].add_angle += -(360 - Data + lastData);
         else
             this->unit_data_[i].add_angle += (Data - lastData);
@@ -144,16 +131,18 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
         this->unit_data_[i].last_angle = Data;
 
         this->state_watch_[i].updateTimestamp();
-        this->state_watch_[i].check(); 
+        this->state_watch_[i].check();
     }
 
   public:
-    // 解析函数
     /**
-     * @brief 解析CAN数据
-     * 因为大小端转换不方便的问题，不直接使用memcpy
-     * @param RxHeader  接收数据的句柄
-     * @param pData     接收数据的缓冲区
+     * @brief 解析 DM 电机反馈帧。
+     *
+     * 反馈格式中包含按位打包字段，因此这里逐项拆包，
+     * 不直接使用 memcpy。
+     *
+     * @param RxHeader 接收到的 CAN 头。
+     * @param pData 接收到的 CAN 数据区。
      */
     void Parse(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData)
     {
@@ -171,23 +160,13 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
                 feedback_[i].T_Rotor = pData[7];
 
                 Configure(i);
-
                 break;
             }
         }
     }
 
     /**
-     * @brief DM电机的MIT控制方法，利用C++特性实现一个方法三种模式
-     * 由于DM电机普通模式发送数据帧较大，所以设定完发送数据后就直接发送
-     *
-     * @param hcan 电机的can句柄
-     * @param motor_index 电机序号从1开始
-     * @param _pos 设定位置
-     * @param _vel 设定速递
-     * @param _KP 设定Kp
-     * @param _KD 设定Kd
-     * @param _torq 设定力矩
+     * @brief MIT 控制模式，包含位置、速度、Kp、Kd 和力矩参数。
      */
     void ctrl_Motor(CAN_HandleTypeDef *hcan, uint8_t motor_index, float _pos, float _vel, float _KP, float _KD,
                     float _torq)
@@ -216,15 +195,9 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
 
         this->send_can_frame(init_address + send_idxs_[motor_index - 1], this->send_data, 8, CAN_TX_MAILBOX1);
     }
-    
 
     /**
-     * @brief DM电机的速度和位置控制方法
-     *
-     * @param hcan 电机的can句柄
-     * @param motor_index 电机序号从1开始
-     * @param _vel 给定速度
-     * @param _pos 给定位置
+     * @brief 速度位置组合控制模式。
      */
     void ctrl_Motor(CAN_HandleTypeDef *hcan, uint8_t motor_index, float _vel, float _pos)
     {
@@ -239,15 +212,10 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
         posvel.pos_tmp = _pos;
 
         this->send_can_frame(init_address + send_idxs_[motor_index - 1], &posvel, 8, CAN_TX_MAILBOX1);
-    }   
-    
+    }
 
     /**
-     * @brief DM电机的速度控制方法
-     *
-     * @param hcan 电机的can句柄
-     * @param motor_index 电机序号从1开始
-     * @param _vel 给定速度
+     * @brief 纯速度控制模式。
      */
     void ctrl_Motor(CAN_HandleTypeDef *hcan, uint8_t motor_index, float _vel)
     {
@@ -264,10 +232,7 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
     }
 
     /**
-     * @brief 使能DM电机
-     *
-     * @param hcan 电机的can句柄
-     * @param motor_index 电机序号从1开始
+     * @brief 使能 DM 电机。
      */
     void On(CAN_HandleTypeDef *hcan, uint8_t motor_index)
     {
@@ -277,10 +242,7 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
     }
 
     /**
-     * @brief 失能DM电机
-     *
-     * @param hcan 电机的can句柄
-     * @param motor_index 电机序号从1开始
+     * @brief 失能 DM 电机。
      */
     void Off(CAN_HandleTypeDef *hcan, uint8_t motor_index)
     {
@@ -289,10 +251,7 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
     }
 
     /**
-     * @brief 清除DM电机错误
-     *
-     * @param hcan 电机的can句柄
-     * @param motor_index 电机序号从1开始
+     * @brief 清除 DM 电机错误状态。
      */
     void ClearErr(CAN_HandleTypeDef *hcan, uint8_t motor_index)
     {
@@ -300,8 +259,8 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
         this->send_can_frame(init_address + send_idxs_[motor_index - 1], this->send_data, 8, CAN_TX_MAILBOX1);
     }
 
-
   protected:
+    // DM 电机按位打包的反馈数据格式。
     struct alignas(uint64_t) DMMotorfeedback
     {
         uint8_t id : 4;
@@ -313,81 +272,52 @@ template <uint8_t N> class DMMotorBase : public MotorBase<N>
         uint8_t T_Rotor;
     };
 
+    // 速度位置模式下使用的数据结构。
     struct alignas(uint64_t) DM_VelPos
     {
         float pos_tmp;
         float vel_tmp;
     };
 
+    // 纯速度模式下使用的数据结构。
     struct alignas(uint32_t) DM_Vel
     {
         float vel_tmp;
     };
 
   private:
-    const int16_t init_address; // 初始地址
+    const int16_t init_address; // CAN 基准地址。
 
-    uint8_t recv_idxs_[N];  // ID索引
-    uint32_t send_idxs_[N]; // 每个电机的发送ID
+    uint8_t recv_idxs_[N];  // 接收相对 ID 列表。
+    uint32_t send_idxs_[N]; // 每个电机对应的发送 ID。
 
-    DMMotorfeedback feedback_[N]; // 国际单位数据
-    Parameters params_;           // 转国际单位参数列表
-    uint8_t send_data[8];
+    DMMotorfeedback feedback_[N]; // 缓存的原始反馈数据。
+    Parameters params_;           // 当前使用的换算参数。
+    uint8_t send_data[8];         // 共用发送缓冲区。
 };
 
-template <uint8_t N> class J4310 : public DMMotorBase<N>
+template <uint8_t N>
+class J4310 : public DMMotorBase<N>
 {
-  private:
-    // // 定义参数生成方法
-    // Parameters GetParameters() override
-    // {
-    //     return DMMotorBase<N>::CreateParams(-12.56, 12.56, -30, 30, -10, 10, 0.0, 500, 0.0, 5.0);
-    // }
-
   public:
-    // 子类构造时传递参数
-    /**
-     * @brief dji电机构造函数
-     *
-     * @param Init_id 初始ID
-     * @param ids 电机ID列表
-     * @param send_idxs_ 电机发送ID列表
-     */
     J4310(uint16_t Init_id, const uint8_t (&ids)[N], const uint32_t (&send_idxs_)[N])
         : DMMotorBase<N>(Init_id, ids, send_idxs_, Parameters(-12.56, 12.56, -30, 30, -3, 3, 0.0, 500, 0.0, 5.0))
     {
     }
 };
 
-template <uint8_t N> class S2325 : public DMMotorBase<N>
+template <uint8_t N>
+class S2325 : public DMMotorBase<N>
 {
-  private:
-    // // 定义参数生成方法
-    // Parameters GetParameters() override
-    // {
-    //     return DMMotorBase<N>::CreateParams(-12.56, 12.56, -30, 30, -10, 10, 0.0, 500, 0.0, 5.0);
-    // }
-
   public:
-    // 子类构造时传递参数
-    /**
-     * @brief dji电机构造函数
-     *
-     * @param Init_id 初始ID
-     * @param ids 电机ID列表
-     */
     S2325(uint16_t Init_id, const uint8_t (&ids)[N], const uint32_t (&send_idxs_)[N])
         : DMMotorBase<N>(Init_id, ids, send_idxs_, Parameters(-12.5, 12.5, -200, 200, -10, 10, 0.0, 500, 0.0, 5.0))
     {
     }
 };
-/**
- * @brief 创建实例时，模板填电机个数，构造函数共三个参数
- * 第一个是初始ID，
- * 第二个是电机接收ID列表
- * 第三个是电机发送ID列表
- */
+
+// 示例全局电机实例。
 inline J4310<1> Motor4310(0x00, {2}, {1});
-inline S2325<2> Motor2325(0x00, {1,2}, {0x201,0x202});
+inline S2325<2> Motor2325(0x00, {1, 2}, {0x201, 0x202});
 
 } // namespace BSP::Motor::DM

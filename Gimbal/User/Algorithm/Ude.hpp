@@ -14,11 +14,17 @@ class Ude
 
     float UdeCalc(float rpm, float u, float err)
     {
+        return UdeCalcDt(rpm, u, err, 0.001f);
+    }
+
+    // 带时间步长的UDE更新，适配非1ms控制周期
+    float UdeCalcDt(float rpm, float u, float err, float dt)
+    {
         vel_ = rpm2av(rpm);
 
         // 积分隔离
-        if (abs(err) < break_I)
-            u0_ += u * B_ * 0.001;
+        if (fabsf(err) < break_I)
+            u0_ += u * B_ * dt;
         else
             u0_ = 0;
 

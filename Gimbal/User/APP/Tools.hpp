@@ -11,7 +11,8 @@ private:
 
 public:
     // Vofa发送数据
-    void vofaSend(float x1, float x2, float x3, float x4, float x5, float x6);
+    void vofaSend(float x1, float x2, float x3, float x4, float x5, float x6, float x7, float x8, float x9,
+                       float x10);
     // 过零处理
     float Zero_crossing_processing(float expectations, float feedback, float maxpos);
     float Round_Error(float Target, float Current, float TurnRange);
@@ -20,6 +21,8 @@ public:
 
     double GetMachinePower(double T, double Vel);
     float clamp(float value, float maxValue, float minValue);
+    // 计算角度差值（带过零处理）- 用于MIT控制
+    float AngleDiffWithWrapping(float target, float current, float halfRange);
 };
 // 创建工具实例
 extern Tools_t Tools;

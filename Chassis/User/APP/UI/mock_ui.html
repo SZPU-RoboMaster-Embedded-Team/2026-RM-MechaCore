@@ -1,0 +1,317 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RM UI Mock (Current)</title>
+  <style>
+    :root {
+      --bg0: #07141e;
+      --bg1: #0f2331;
+      --cyan: #4ed9e6;
+      --white: #e8f4ff;
+      --yellow: #ffd24d;
+      --green: #66e08a;
+      --redblue: #ff6478;
+      --orange: #ff9f43;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(1100px 680px at 50% 48%, rgba(78, 217, 230, 0.1), transparent 60%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
+      color: var(--white);
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    .frame {
+      width: min(96vw, 1520px);
+      aspect-ratio: 16 / 9;
+      border: 1px solid rgba(78, 217, 230, 0.35);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.55), inset 0 0 55px rgba(78, 217, 230, 0.05);
+      background: rgba(0, 8, 16, 0.4);
+    }
+    svg { width: 100%; height: 100%; display: block; }
+    .panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: min(380px, calc(100% - 20px));
+      background: rgba(6, 20, 30, 0.86);
+      border: 1px solid rgba(78, 217, 230, 0.4);
+      border-radius: 10px;
+      padding: 10px;
+      backdrop-filter: blur(4px);
+      font-size: 12px;
+    }
+    .panel h3 { margin: 0 0 8px; font-size: 13px; color: var(--cyan); letter-spacing: 0.06em; }
+    .row {
+      display: grid;
+      grid-template-columns: 96px 1fr 44px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .row.mode-row { grid-template-columns: 96px 1fr; }
+    .mode-buttons, .top-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+    .panel button {
+      border: 1px solid rgba(78, 217, 230, 0.45);
+      background: rgba(17, 43, 58, 0.9);
+      color: var(--white);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .panel button.active {
+      color: #06141e;
+      background: var(--yellow);
+      border-color: var(--yellow);
+      font-weight: 700;
+    }
+    .panel input[type="range"] { width: 100%; }
+    .panel label { color: #b6d9e6; }
+    .hint { opacity: 0.75; margin-top: 6px; font-size: 11px; }
+    .hud-text { letter-spacing: 0.06em; font-weight: 700; user-select: none; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+      <g opacity="0.14">
+        <rect x="0" y="0" width="1920" height="1080" fill="none" stroke="#4ed9e6" stroke-width="2"/>
+      </g>
+
+      <circle cx="954" cy="495" r="6" fill="none" stroke="#4ed9e6" stroke-width="5"/>
+
+      <path id="arcLimit" fill="none" stroke="#ff6478" stroke-width="25"/>
+      <path id="arcPower" fill="none" stroke="#66e08a" stroke-width="25"/>
+      <path id="arcCap" fill="none" stroke="#66e08a" stroke-width="15"/>
+      <g id="powerScale"></g>
+
+      <line x1="570" y1="540" x2="595" y2="540" stroke="#fff" stroke-width="5"/>
+
+      <rect x="660" y="140" width="600" height="80" fill="rgba(255,255,255,0.04)" stroke="#fff" stroke-width="4"/>
+      <text id="mnr" class="hud-text" x="730" y="180" text-anchor="middle" dominant-baseline="middle" font-size="36" fill="#66e08a">NOR</text>
+      <text id="mrt" class="hud-text" x="930" y="180" text-anchor="middle" dominant-baseline="middle" font-size="36" fill="#66e08a">ROT</text>
+      <text id="mfl" class="hud-text" x="1130" y="180" text-anchor="middle" dominant-baseline="middle" font-size="36" fill="#66e08a">FOL</text>
+
+      <rect x="760" y="60" width="400" height="80" fill="rgba(255,255,255,0.04)" stroke="#fff" stroke-width="4"/>
+      <text id="mfr" class="hud-text" x="860" y="100" text-anchor="middle" dominant-baseline="middle" font-size="36" fill="#66e08a">FRI</text>
+      <text id="mvs" class="hud-text" x="1060" y="100" text-anchor="middle" dominant-baseline="middle" font-size="36" fill="#66e08a">VIS</text>
+
+      <circle id="vsa" cx="960" cy="500" r="20" fill="none" stroke="#ffd24d" stroke-width="3"/>
+
+      <text class="hud-text" x="1460" y="540" text-anchor="start" dominant-baseline="middle" font-size="28" fill="#fff">已发射：</text>
+      <text id="fin" class="hud-text" x="1540" y="540" text-anchor="start" dominant-baseline="middle" font-size="28" fill="#ffd24d">0</text>
+    </svg>
+
+    <div class="panel">
+      <h3>Current UI Simulation</h3>
+      <div class="row mode-row">
+        <label>底盘模式</label>
+        <div class="mode-buttons">
+          <button id="btnNor" class="active">NOR</button>
+          <button id="btnRot">ROT</button>
+          <button id="btnFol">FOL</button>
+        </div>
+      </div>
+      <div class="row mode-row">
+        <label>状态高亮</label>
+        <div class="top-buttons">
+          <button id="btnFri">FRI</button>
+          <button id="btnVis">VIS</button>
+          <button id="btnShift">Shift</button>
+        </div>
+      </div>
+      <div class="row">
+        <label for="power">功率W</label>
+        <input id="power" type="range" min="0" max="120" value="30" />
+        <span id="powerV">30</span>
+      </div>
+      <div class="row">
+        <label for="limit">限功率W</label>
+        <input id="limit" type="range" min="0" max="120" value="60" />
+        <span id="limitV">60</span>
+      </div>
+      <div class="row">
+        <label for="cap">超电%</label>
+        <input id="cap" type="range" min="1" max="39" value="20" />
+        <span id="capV">20</span>
+      </div>
+      <div class="row">
+        <label for="fire">已发射</label>
+        <input id="fire" type="range" min="0" max="999" value="0" />
+        <span id="fireV">0</span>
+      </div>
+      <div class="row">
+        <label for="aimX">AimX(raw)</label>
+        <input id="aimX" type="range" min="0" max="255" value="140" />
+        <span id="aimXV">140</span>
+      </div>
+      <div class="row">
+        <label for="aimY">AimY</label>
+        <input id="aimY" type="range" min="0" max="255" value="110" />
+        <span id="aimYV">110</span>
+      </div>
+      <div class="hint">映射与固件一致：aimX 先减 140，再按 x*2.75+960，y*2.05+275。</div>
+    </div>
+  </div>
+
+  <script>
+    const NS = "http://www.w3.org/2000/svg";
+    const state = {
+      nor: true, rot: false, fol: false,
+      fri: false, vis: false, shift: false,
+      power: 30, limit: 60, cap: 20,
+      fire: 0, aimX: 140, aimY: 110
+    };
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function polar(cx, cy, r, deg) {
+      const rad = (deg - 90) * Math.PI / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    }
+    function arcPath(cx, cy, r, a0, a1) {
+      const s = polar(cx, cy, r, a0);
+      const e = polar(cx, cy, r, a1);
+      const span = Math.abs(a1 - a0) % 360;
+      const large = span > 180 ? 1 : 0;
+      const sweep = a1 > a0 ? 1 : 0;
+      return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} ${sweep} ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+    }
+    function setArc(id, s, e, r, w, color) {
+      const el = document.getElementById(id);
+      el.setAttribute("d", arcPath(960, 540, r, s, e));
+      el.setAttribute("stroke-width", String(w));
+      el.setAttribute("stroke", color);
+    }
+
+    function drawScale() {
+      const g = document.getElementById("powerScale");
+      g.innerHTML = "";
+      for (let value = 0; value <= 120; value += 10) {
+        const angle = 130 - value * (80 / 120);
+        const p0 = polar(960, 540, 368, angle);
+        const p1 = polar(960, 540, 394, angle);
+        const pt = polar(960, 540, 430, angle);
+
+        const line = document.createElementNS(NS, "line");
+        line.setAttribute("x1", p0.x.toFixed(1));
+        line.setAttribute("y1", p0.y.toFixed(1));
+        line.setAttribute("x2", p1.x.toFixed(1));
+        line.setAttribute("y2", p1.y.toFixed(1));
+        line.setAttribute("stroke", "#fff");
+        line.setAttribute("stroke-width", "2");
+        g.appendChild(line);
+
+        const t = document.createElementNS(NS, "text");
+        t.textContent = String(value);
+        t.setAttribute("x", pt.x.toFixed(1));
+        t.setAttribute("y", pt.y.toFixed(1));
+        t.setAttribute("fill", "#fff");
+        t.setAttribute("font-size", "20");
+        t.setAttribute("font-weight", "700");
+        t.setAttribute("text-anchor", "middle");
+        t.setAttribute("dominant-baseline", "middle");
+        g.appendChild(t);
+      }
+    }
+
+    function refreshModes() {
+      const cGreen = "#66e08a";
+      const cYellow = "#ffd24d";
+      document.getElementById("mnr").setAttribute("fill", state.nor ? cYellow : cGreen);
+      document.getElementById("mrt").setAttribute("fill", state.rot ? cYellow : cGreen);
+      document.getElementById("mfl").setAttribute("fill", state.fol ? cYellow : cGreen);
+      document.getElementById("mfr").setAttribute("fill", state.fri ? cYellow : cGreen);
+      document.getElementById("mvs").setAttribute("fill", state.vis ? cYellow : cGreen);
+    }
+
+    function render() {
+      const powerAngle = clamp(130 - state.power * (80 / 120), 50, 130);
+      const limitAngle = clamp(130 - state.limit * (80 / 120), 50, 130);
+
+      setArc("arcPower", powerAngle, powerAngle + 2, 380, 25, "#66e08a");
+      setArc("arcLimit", limitAngle, limitAngle + 2, 380, 25, "#ff6478");
+
+      const capColor = state.shift ? "#ff9f43" : (state.cap < 30 ? "#ff6478" : "#66e08a");
+      setArc("arcCap", 271, 271 + clamp(state.cap, 1, 39), 380, 15, capColor);
+
+      document.getElementById("fin").textContent = String(state.fire);
+
+      const aimXCentered = state.aimX - 140;
+      const x = aimXCentered * 2.75 + 960;
+      const y = state.aimY * 2.05 + 275;
+      const vsa = document.getElementById("vsa");
+      if (state.aimX !== 0 && state.aimY !== 0) {
+        vsa.setAttribute("cx", x.toFixed(1));
+        vsa.setAttribute("cy", y.toFixed(1));
+        vsa.setAttribute("display", "block");
+      } else {
+        vsa.setAttribute("display", "none");
+      }
+
+      refreshModes();
+    }
+
+    function bindSlider(id, key) {
+      const el = document.getElementById(id);
+      const out = document.getElementById(id + "V");
+      el.addEventListener("input", () => {
+        state[key] = Number(el.value);
+        out.textContent = el.value;
+        render();
+      });
+      out.textContent = el.value;
+    }
+
+    function setOnlyMode(modeKey) {
+      state.nor = modeKey === "nor";
+      state.rot = modeKey === "rot";
+      state.fol = modeKey === "fol";
+      document.getElementById("btnNor").classList.toggle("active", state.nor);
+      document.getElementById("btnRot").classList.toggle("active", state.rot);
+      document.getElementById("btnFol").classList.toggle("active", state.fol);
+      render();
+    }
+
+    document.getElementById("btnNor").onclick = () => setOnlyMode("nor");
+    document.getElementById("btnRot").onclick = () => setOnlyMode("rot");
+    document.getElementById("btnFol").onclick = () => setOnlyMode("fol");
+
+    document.getElementById("btnFri").onclick = (e) => {
+      state.fri = !state.fri;
+      e.currentTarget.classList.toggle("active", state.fri);
+      render();
+    };
+    document.getElementById("btnVis").onclick = (e) => {
+      state.vis = !state.vis;
+      e.currentTarget.classList.toggle("active", state.vis);
+      render();
+    };
+    document.getElementById("btnShift").onclick = (e) => {
+      state.shift = !state.shift;
+      e.currentTarget.classList.toggle("active", state.shift);
+      render();
+    };
+
+    bindSlider("power", "power");
+    bindSlider("limit", "limit");
+    bindSlider("cap", "cap");
+    bindSlider("fire", "fire");
+    bindSlider("aimX", "aimX");
+    bindSlider("aimY", "aimY");
+
+    drawScale();
+    render();
+  </script>
+</body>
+</html>
+

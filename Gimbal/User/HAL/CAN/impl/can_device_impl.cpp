@@ -9,6 +9,21 @@ CanDevice::CanDevice(CAN_HandleTypeDef *handle, uint32_t filter_bank, uint32_t f
 {
 }
 
+void CanDevice::ensure_tx_mutex()
+{
+    if (tx_mutex_ != nullptr)
+    {
+        return;
+    }
+
+    const osKernelState_t kernel_state = osKernelGetState();
+    if (kernel_state == osKernelReady || kernel_state == osKernelRunning)
+    {
+        static const osMutexAttr_t tx_mutex_attr = {"can_tx_mutex", 0U, nullptr, 0U};
+        tx_mutex_ = osMutexNew(&tx_mutex_attr);
+    }
+}
+
 void CanDevice::init()
 {
     configure_filter();
@@ -16,6 +31,7 @@ void CanDevice::init()
 
 void CanDevice::start()
 {
+    ensure_tx_mutex();
     HAL_CAN_Start(handle_);
 
     // 设置中断
@@ -31,36 +47,53 @@ void CanDevice::start()
 
 bool CanDevice::send(const Frame &frame)
 {
-    if (HAL_CAN_GetTxMailboxesFreeLevel(handle_) == 0)
+    ensure_tx_mutex();
+
+    if (tx_mutex_ != nullptr && osMutexAcquire(tx_mutex_, 2) != osOK)
     {
         return false;
     }
 
-    CAN_TxHeaderTypeDef tx_header;
-    tx_header.DLC = frame.dlc;
-    tx_header.IDE = frame.is_extended_id ? CAN_ID_EXT : CAN_ID_STD;
-    tx_header.RTR = frame.is_remote_frame ? CAN_RTR_REMOTE : CAN_RTR_DATA;
-    uint32_t temp_mailbox = frame.mailbox;
-
-    if (frame.is_extended_id)
+    bool ok = false;
+    do
     {
-        tx_header.ExtId = frame.id;
-        tx_header.StdId = 0;
-    }
-    else
+        if (HAL_CAN_GetTxMailboxesFreeLevel(handle_) == 0)
+        {
+            break;
+        }
+
+        CAN_TxHeaderTypeDef tx_header{};
+        tx_header.DLC = frame.dlc;
+        tx_header.IDE = frame.is_extended_id ? CAN_ID_EXT : CAN_ID_STD;
+        tx_header.RTR = frame.is_remote_frame ? CAN_RTR_REMOTE : CAN_RTR_DATA;
+        tx_header.TransmitGlobalTime = DISABLE;
+        uint32_t temp_mailbox = frame.mailbox;
+
+        if (frame.is_extended_id)
+        {
+            tx_header.ExtId = frame.id;
+            tx_header.StdId = 0;
+        }
+        else
+        {
+            tx_header.StdId = frame.id;
+            tx_header.ExtId = 0;
+        }
+
+        if (HAL_CAN_AddTxMessage(handle_, &tx_header, const_cast<uint8_t *>(frame.data), &temp_mailbox) != HAL_OK)
+        {
+            break;
+        }
+
+        ok = true;
+    } while (false);
+
+    if (tx_mutex_ != nullptr)
     {
-        tx_header.StdId = frame.id;
-        tx_header.ExtId = 0;
+        osMutexRelease(tx_mutex_);
     }
 
-    tx_header.TransmitGlobalTime = DISABLE;
-
-    if (HAL_CAN_AddTxMessage(handle_, &tx_header, const_cast<uint8_t *>(frame.data), &temp_mailbox) != HAL_OK)
-    {
-        return false;
-    }
-
-    return true;
+    return ok;
 }
 
 bool CanDevice::receive(Frame &frame)

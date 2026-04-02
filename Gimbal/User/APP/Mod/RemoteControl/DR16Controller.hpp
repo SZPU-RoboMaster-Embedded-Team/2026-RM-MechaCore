@@ -37,14 +37,26 @@ class DR16RemoteController : public IRemoteController
     }
 
     /**
-     * @brief 将开火交给视觉控制
-     * 当视觉模式启动并且左击开火时启动视觉开火
+     * @brief 视觉自动开火模式
+     * 满足以下条件之一时启动视觉开火：
+     * 1. 鼠标右键+左键（键鼠模式下手动触发视觉开火）
+     * 2. 遥控器左中右上（符节模式）+ 收到视觉开火位（视觉自动瞄准自动打弹）
      * @return true
      * @return false
      */
     bool isVisionFireMode() const override
     {
-        return (dr16.mouse().right == true) && (dr16.mouse().left == true);
+        // 键鼠模式：右键瞄准 + 左键开火
+        bool keyboard_vision_fire = (dr16.mouse().right == true) && (dr16.mouse().left == true);
+        // 遥控器模式：左中右上 + 视觉开火位，才启用视觉自动开火
+        bool remote_vision_fire = isRuneMode() && Communicat::vision.get_fire_num();
+        
+        return keyboard_vision_fire || remote_vision_fire;
+    }
+
+    bool isRuneMode() const override
+    {
+        return (dr16.switchLeft() == Dr16::Switch::MIDDLE) && (dr16.switchRight() == Dr16::Switch::UP);
     }
 
     bool isStopMode() const override
@@ -55,17 +67,20 @@ class DR16RemoteController : public IRemoteController
 
     bool isUniversalMode() const override
     {
-        return (dr16.switchLeft() == Dr16::Switch::UP);
+        return (dr16.switchLeft() == Dr16::Switch::UP) && (dr16.switchRight() == Dr16::Switch::DOWN)
+        || (dr16.switchLeft() == Dr16::Switch::DOWN) && (dr16.switchRight() == Dr16::Switch::UP);
     }
 
     bool isFollowMode() const override
     {
-        return (dr16.switchLeft() == Dr16::Switch::MIDDLE) && (dr16.switchRight() != Dr16::Switch::MIDDLE);
+        return (dr16.switchLeft() == Dr16::Switch::MIDDLE) && (dr16.switchRight() == Dr16::Switch::DOWN);
     }
 
     bool isRotatingMode() const override
     {
-        return (dr16.switchLeft() == Dr16::Switch::DOWN) && (dr16.switchRight() == Dr16::Switch::MIDDLE);
+        return ((dr16.switchLeft() == Dr16::Switch::UP) && (dr16.switchRight() == Dr16::Switch::UP))
+        || ((dr16.switchLeft() == Dr16::Switch::DOWN) && (dr16.switchRight() == Dr16::Switch::MIDDLE));
+                
     }
 
     float getLeftX() const override

@@ -6,28 +6,31 @@
 
 namespace Communicat
 {
-// CAN通信相关定义
-#define CAN_G2C_FRAME1_ID 0x205              // 第一帧ID
-#define CAN_G2C_FRAME2_ID 0x206              // 第二帧ID
+// CAN communication definitions
+#define CAN_G2C_FRAME1_ID 0x205
+#define CAN_G2C_FRAME2_ID 0x206
 
-#define CAN_CHASSIS_TO_GIMBAL_ID 0x207       // 底盘->云台接收ID (单帧)
+#define CAN_CHASSIS_TO_GIMBAL_FRAME1_ID 0x207
+#define CAN_CHASSIS_TO_GIMBAL_FRAME2_ID 0x208
+
 class Gimbal_to_Chassis
 {
   public:
     void Data_send();
-    void HandleCANMessage(uint32_t std_id, uint8_t* data);
+    void HandleCANMessage(uint32_t std_id, const uint8_t *data, uint8_t dlc);
+
   private:
     float CalcuGimbalToChassisAngle();
 
-    uint8_t head = 0xA5; // 帧头
+    uint8_t head = 0xA5;
     uint8_t len;
-    int16_t Init_Angle = -73;
+    int16_t Init_Angle = 107;
     int16_t target_offset_angle = 0;
 
-    // 接收帧头定义
     static constexpr uint8_t RX_FRAME_HEAD1 = 0x21;
     static constexpr uint8_t RX_FRAME_HEAD2 = 0x12;
-    struct __attribute__((packed)) Direction // 方向结构体
+
+    struct __attribute__((packed)) Direction
     {
         uint8_t LX;
         uint8_t LY;
@@ -38,7 +41,7 @@ class Gimbal_to_Chassis
         int8_t Power;
     };
 
-    struct __attribute__((packed)) ChassisMode // 底盘模式
+    struct __attribute__((packed)) ChassisMode
     {
         uint8_t Universal_mode : 1;
         uint8_t Follow_mode : 1;
@@ -47,7 +50,7 @@ class Gimbal_to_Chassis
         uint8_t stop : 1;
     };
 
-    struct __attribute__((packed)) UiList // 底盘模式
+    struct __attribute__((packed)) UiList
     {
         uint8_t MCL : 1;
         uint8_t BP : 1;
@@ -60,31 +63,45 @@ class Gimbal_to_Chassis
         int16_t projectile_count;
     };
 
-    struct __attribute__((packed)) RxRefree // 裁判系统数据 (单帧接收，含双字节帧头)
+    struct __attribute__((packed)) RxRefreeFrame1
     {
-        uint8_t head1;              // 帧头1: 0x21
-        uint8_t head2;              // 帧头2: 0x12
+        uint8_t head1;
+        uint8_t head2;
         uint16_t booster_heat_cd;
         uint16_t booster_heat_max;
         uint16_t booster_now_heat;
     };
 
-    // CAN发送缓冲区 - 两帧
-    uint8_t can_tx_buffer[2][8];
-    
-    // CAN接收相关 - 简化为单帧
-    uint32_t last_frame_time = 0;
-    static constexpr uint32_t FRAME_TIMEOUT = 50; // 50ms超时
+    struct __attribute__((packed)) RxRefreeFrame2
+    {
+        float launch_speed;
+    };
 
-    Direction direction;
-    ChassisMode chassis_mode;
-    UiList ui_list;
-    RxRefree rx_refree;
-		
+    struct __attribute__((packed)) RxRefree
+    {
+        uint16_t booster_heat_cd = 0;
+        uint16_t booster_heat_max = 0;
+        uint16_t booster_now_heat = 0;
+        float launch_speed = 0.0f;
+    };
+
+    uint8_t can_tx_buffer[2][8];
+
+    uint32_t last_frame_time = 0;
+    static constexpr uint32_t FRAME_TIMEOUT = 50;
+    bool rx_refree_frame1_ready = false;
+
+    Direction direction{};
+    ChassisMode chassis_mode{};
+    UiList ui_list{};
+    RxRefree rx_refree{};
+
   public:
     void set_LX(double LX);
     void set_LY(double LY);
     void set_Rotating_vel(uint8_t Rotating_vel);
+    float set_Rotating_vel() const;
+    void set_Follow_mode(bool Follow);
     void set_UIF5(bool F5);
     void set_Shift(bool Shift);
     void set_MCL(bool MCL);
@@ -105,6 +122,36 @@ class Gimbal_to_Chassis
     {
         return rx_refree.booster_now_heat;
     }
+    float getLaunchSpeed()
+    {
+        return rx_refree.launch_speed;
+    }
+
+    float getLaunchSpeed() const
+    {
+        return rx_refree.launch_speed;
+    }
+
+    bool getRotatingMode() const
+    {
+        return chassis_mode.Rotating_mode;
+    }
+
+    bool getFollowMode() const
+    {
+        return chassis_mode.Follow_mode;
+    }
+
+    float getRotatingVelAbs() const
+    {
+        if (direction.Rotating_vel == 0U)
+        {
+            return 0.0f;
+        }
+
+        const float rotating_vel = (static_cast<float>(direction.Rotating_vel) - 110.0f) / 110.0f;
+        return rotating_vel >= 0.0f ? rotating_vel : -rotating_vel;
+    }
 
     void setPower(int8_t power)
     {
@@ -112,8 +159,8 @@ class Gimbal_to_Chassis
         direction.Power += power;
         direction.Power = Tools.clamp(direction.Power, 120, -100);
     }
-	
-	void setFly(int8_t power)
+
+    void setFly(int8_t power)
     {
         direction.Power = power;
     }
@@ -127,7 +174,9 @@ class Gimbal_to_Chassis
 class Vision
 {
   public:
-    /* data */
+    static constexpr uint32_t TX_PAYLOAD_SIZE = 27;
+    static constexpr uint32_t TX_FRAME_SIZE = TX_PAYLOAD_SIZE + 2;
+
     struct Frame
     {
         uint8_t head_one;
@@ -136,14 +185,16 @@ class Vision
 
     struct Tx_Gimbal
     {
-        int32_t pitch_angle;
-        int32_t yaw_angle;
+        float quat_w;
+        float quat_x;
+        float quat_y;
+        float quat_z;
         uint32_t time;
     };
-
+    
     struct Tx_Other
     {
-        uint8_t bullet_rate;
+        float bullet_rate;
         uint8_t enemy_color;
         uint8_t vision_mode;
         uint8_t tail;
@@ -184,13 +235,14 @@ class Vision
     Rx_Target rx_target;
     Rx_Other rx_other;
 
-    uint8_t Tx_pData[18];
-
+    uint8_t Tx_pData[TX_FRAME_SIZE];
 
     bool fire_flag;
     uint32_t fire_num;
+    uint32_t fire_update_count = 0;
+    bool fire_value_initialized = false;
 
-    bool vision_flag; // 超过一定范围就置1
+    bool vision_flag;
 
   public:
     void Data_send();
@@ -211,6 +263,7 @@ class Vision
     {
         return yaw_angle_;
     }
+
     float getTarPitch()
     {
         return pitch_angle_;
@@ -234,6 +287,11 @@ class Vision
     bool get_fire_num()
     {
         return rx_other.fire;
+    }
+
+    uint32_t getFireUpdateCount() const
+    {
+        return fire_update_count;
     }
 
     void setVisionMode(uint8_t mode)
@@ -272,6 +330,16 @@ inline void Gimbal_to_Chassis::set_Rotating_vel(uint8_t Rotating_vel)
     direction.Rotating_vel = Rotating_vel;
 }
 
+inline float Gimbal_to_Chassis::set_Rotating_vel() const
+{
+    return getRotatingVelAbs();
+}
+
+inline void Gimbal_to_Chassis::set_Follow_mode(bool Follow)
+{
+    chassis_mode.Follow_mode = Follow;
+}
+
 inline void Gimbal_to_Chassis::set_UIF5(bool F5)
 {
     ui_list.UI_F5 = F5;
@@ -295,7 +363,6 @@ inline void Gimbal_to_Chassis::set_BP(bool BP)
 inline void Gimbal_to_Chassis::set_Init_angle(int16_t angle)
 {
     direction.target_offset_angle = angle;
-    //    Init_Angle += angle;
 }
 
 inline Vision vision;
@@ -304,14 +371,13 @@ inline Vision vision;
 
 extern Communicat::Gimbal_to_Chassis Gimbal_to_Chassis_Data;
 
-// 将RTOS任务引至.c文件
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    void CommunicationTask(void *argument);
-    void send();
+void CommunicationTask(void *argument);
+void send();
 
 #ifdef __cplusplus
 }

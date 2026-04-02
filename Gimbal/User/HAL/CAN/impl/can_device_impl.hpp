@@ -11,6 +11,7 @@
 
 #pragma once
 #include "../interface/can_device.hpp"
+#include "cmsis_os2.h"
 #include <vector>
 
 namespace HAL::CAN
@@ -46,9 +47,11 @@ class CanDevice : public ICanDevice
     uint32_t filter_bank_;
     uint32_t fifo_;
     uint32_t mailbox_;
+    osMutexId_t tx_mutex_ = nullptr;
 
     // 存储注册的回调函数
     std::vector<RxCallback> rx_callbacks_;
+    void ensure_tx_mutex();
 
     // 配置过滤器
     void configure_filter();

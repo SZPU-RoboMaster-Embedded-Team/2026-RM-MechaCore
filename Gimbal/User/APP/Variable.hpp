@@ -43,7 +43,9 @@ extern PID pid_3508_Friction_L;
 extern PID pid_3508_Friction_R;
 
 extern Alg::LADRC::Adrc Adrc_yaw_vel;
+extern Alg::LADRC::Adrc Adrc_yaw_vision;
 extern Alg::LADRC::Adrc Adrc_pitch_vel;
+extern Alg::LADRC::Adrc Adrc_pitch_vision;
 
 extern Alg::LADRC::Adrc Adrc_Friction_L;
 extern Alg::LADRC::Adrc Adrc_Friction_R;

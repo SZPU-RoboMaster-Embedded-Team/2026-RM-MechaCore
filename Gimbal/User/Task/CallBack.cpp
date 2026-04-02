@@ -17,12 +17,10 @@ extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
     if (hcan == can1.get_handle())
     {
-        can1.receive(rx_frame1);  // receive()内部会自动触发所有注册的回调
-        
-        
-        
-		BSP::Motor::DM::Motor4310.Parse(rx_frame1);
-        
+        can1.receive(rx_frame1);  // receive()内部会自动触发所有注册的回调               
+        BSP::Motor::DM::Motor4310.Parse(rx_frame1);      
+        //BSP::Motor::Dji::Motor3508.Parse(rx_frame1);
+  
     }
 }
 
@@ -34,9 +32,9 @@ extern "C" void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
     if (hcan == can2.get_handle())
     {
         can2.receive(rx_frame2);  // receive()内部会自动触发所有注册的回调
-				BSP::Motor::Dji::Motor2006.Parse(rx_frame2);
+	    BSP::Motor::Dji::Motor2006.Parse(rx_frame2);
 			BSP::Motor::Dji::Motor3508.Parse(rx_frame2);
-        Gimbal_to_Chassis_Data.HandleCANMessage(rx_frame2.id, rx_frame2.data);    
+      Gimbal_to_Chassis_Data.HandleCANMessage(rx_frame2.id, rx_frame2.data, rx_frame2.dlc);
       
     }
 }
@@ -56,7 +54,7 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
     }
     else if(huart == uart1.get_handle())
     {
-          BSP::IMU::imu.Parse(huart, Size);
+        BSP::IMU::imu.Parse(huart, Size);
         HAL::UART::Data imu_rx_data{imu_rx_buffer, sizeof(imu_rx_buffer)};
     }
 }

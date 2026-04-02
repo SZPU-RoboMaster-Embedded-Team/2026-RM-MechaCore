@@ -1,7 +1,7 @@
 #include "../Task/EvenTask.hpp"
 #include "../BSP/stdxxx.hpp"
 
-#define RGB_FLOW_COLOR_CHANGE_TIME 500
+#define RGB_FLOW_COLOR_CHANGE_TIME 100
 #define RGB_FLOW_COLOR_LENGHT 3
 
 #define RED     0xFFFF0000
@@ -21,6 +21,9 @@ class LED : public IObserver
 {
 private:
     uint16_t i, j;
+    uint16_t normal_color_index = 0;
+    uint16_t normal_step_index = 0;
+    bool normal_state_initialized = false;
     float delta_alpha, delta_red, delta_green, delta_blue;
     float alpha, red, green, blue;
     uint32_t aRGB;

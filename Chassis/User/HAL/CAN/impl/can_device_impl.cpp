@@ -21,11 +21,21 @@ void CanDevice::start()
     // 设置中断
     if (fifo_ == CAN_FILTER_FIFO0)
     {
-        HAL_CAN_ActivateNotification(handle_, CAN_IT_RX_FIFO0_MSG_PENDING);
+        HAL_CAN_ActivateNotification(handle_, CAN_IT_RX_FIFO0_MSG_PENDING |
+                                              CAN_IT_RX_FIFO0_OVERRUN |
+                                              CAN_IT_BUSOFF |
+                                              CAN_IT_ERROR_WARNING |
+                                              CAN_IT_ERROR_PASSIVE |
+                                              CAN_IT_LAST_ERROR_CODE);
     }
     else if (fifo_ == CAN_FILTER_FIFO1)
     {
-        HAL_CAN_ActivateNotification(handle_, CAN_IT_RX_FIFO1_MSG_PENDING);
+        HAL_CAN_ActivateNotification(handle_, CAN_IT_RX_FIFO1_MSG_PENDING |
+                                              CAN_IT_RX_FIFO1_OVERRUN |
+                                              CAN_IT_BUSOFF |
+                                              CAN_IT_ERROR_WARNING |
+                                              CAN_IT_ERROR_PASSIVE |
+                                              CAN_IT_LAST_ERROR_CODE);
     }
 }
 

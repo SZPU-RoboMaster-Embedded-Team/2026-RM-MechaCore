@@ -54,6 +54,8 @@ public:
 
     inline void Set_Target(float __Target);
 
+    inline void Reset(float __Value);
+
     void TIM_Calculate_PeriodElapsedCallback();
 
 protected:
@@ -141,6 +143,19 @@ inline void Class_Slope::Set_Decrease_Value(float __Decrease_Value)
 inline void Class_Slope::Set_Target(float __Target)
 {
     Target = __Target;
+}
+
+/**
+ * @brief 重置斜坡规划器状态
+ *
+ * @param __Value 复位后的当前值/目标值
+ */
+inline void Class_Slope::Reset(float __Value)
+{
+    Out = __Value;
+    Now_Planning = __Value;
+    Now_Real = __Value;
+    Target = __Value;
 }
 
 #endif

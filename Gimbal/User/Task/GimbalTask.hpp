@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Algorithm/FSM/alg_fsm.hpp"
-#include "../User/BSP/SimpleKey/SimpleKey.hpp"
+#include "stm32f4xx_hal.h"
 
 namespace TASK::GIMBAL
 {
@@ -18,7 +18,7 @@ class Gimbal : public Class_FSM
 {
 
   public:
-    // 构造函数声明
+    // 构造函数
     Gimbal();
     void upDate();
 
@@ -35,20 +35,11 @@ class Gimbal : public Class_FSM
     float filter_tar_yaw_vel;
     float filter_tar_yaw_pos;
 
-
-
-    // 按键状态
-    BSP::Key::SimpleKey DM_state;
-    BSP::Key::SimpleKey vision_state;
-
     bool is_true_around = false;
     uint32_t true_around_time = 0;
-    
-    // 视觉模式下是否有有效目标
-    bool vision_has_target = false;
 
   public:
-    void TurnAround();
+    //void TurnAround();
 
     void setNowStatus(Gimbal_Status state)
     {
@@ -65,7 +56,7 @@ class Gimbal : public Class_FSM
 inline Gimbal gimbal;
 
 } // namespace TASK::GIMBAL
-// 将RTOS任务引至.c文件
+
 #ifdef __cplusplus
 extern "C"
 {

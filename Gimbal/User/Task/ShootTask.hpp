@@ -8,31 +8,24 @@
 #include "../User/BSP/DWT/DWT.hpp"
 #include "../APP/Variable.hpp"
 #include "../APP/Heat_Detector/Heat_Control.hpp"
+
 namespace TASK::Shoot
 {
 using namespace Alg::LADRC;
 
 enum Booster_Status
 {
-    // 失能
     DISABLE,
-    // 停止
     STOP,
-    // 单发模式
     ONLY,
-    // 连发模式
     AUTO
 };
 
-/**
- * @brief 防卡弹状态类型
- *
- */
 enum Jamming_Status
 {
-    NORMAL = 0, // 正常模式
-    SUSPECT,    // 可疑堵转
-    PROCESSING, // 处理堵转
+    NORMAL = 0,
+    SUSPECT,
+    PROCESSING,
 };
 
 class Class_ShootFSM;
@@ -40,39 +33,68 @@ class Class_ShootFSM;
 class Class_JammingFSM : public Class_FSM
 {
   private:
-    // 堵转力矩
     float stall_torque = 0.2f;
-    // 堵转时间阈值，超过则为堵转
     static constexpr uint32_t stall_time = 200;
-    // 从堵转停止时间阈值，超过则停止堵转
     static constexpr uint32_t stall_stop = 300;
-
-    Class_ShootFSM *Booster = nullptr; // 任务指针
+    Class_ShootFSM *Booster = nullptr;
 
   public:
     void UpState(void);
 
-    // 添加设置Booster指针的方法
     void setBooster(Class_ShootFSM *booster)
     {
         Booster = booster;
     }
 };
 
-/**
- * @brief 使用中科大的有限状态机实现发射机构相关逻辑
- *
- */
+enum Click_Status
+{
+    CLICK_DISABLE,
+    PRESS_DOWN,
+    CLICK,
+    LONG_PRESS,
+    RELEASE,
+};
+
+class Class_ClickFSM : public Class_FSM
+{
+  public:
+    void UpState(bool key_pressed);
+
+    bool isClick() { return Now_Status_Serial == Click_Status::CLICK; }
+
+  private:
+    static constexpr uint32_t click_time_threshold = 200;
+    uint32_t press_start_time = 0;
+};
+
+enum StopFire_Status
+{
+    STOP_FIRE_DISABLE,
+    STOP_FIRE_ACTIVE,
+    STOP_FIRE_PROCESSING,
+};
+
+class Class_StopFireFSM : public Class_FSM
+{
+  public:
+    void UpState(float current_torque, float time_elapsed_sec);
+
+    void Reset() { Set_Status(StopFire_Status::STOP_FIRE_DISABLE); }
+    void Activate() { Set_Status(StopFire_Status::STOP_FIRE_ACTIVE); }
+    bool isProcessing() { return Now_Status_Serial == StopFire_Status::STOP_FIRE_PROCESSING; }
+
+  private:
+    const float stop_torque_threshold = 8000.0f;
+    const float stop_time_threshold = 1.0f;
+};
+
 class Class_ShootFSM : public Class_FSM
 {
-
   public:
-    // 显式声明构造函数
     Class_ShootFSM();
 
-    // ADRC控制器
     void Control(void);
-
     void UpState(void);
 
     void setTargetDailTorque(float torque)
@@ -85,86 +107,84 @@ class Class_ShootFSM : public Class_FSM
         Set_Status(state);
     }
 
-    // 设置开火标志位
     void setFireFlag(bool flag)
     {
         fire_flag = flag;
     }
 
+    void setFrictionEnabled(bool enabled)
+    {
+        friction_enabled = enabled;
+    }
+
+    bool isFrictionEnabled() const
+    {
+        return friction_enabled;
+    }
+
     bool getFrictionState();
     int16_t getProjectileCount();
-    
+
   protected:
-    // 初始化相关常量
-
-    // 热量控制
-
-    // 检测摩擦轮力矩变化
-
-    // 拨盘控制
-
-    // CAN发送
     void CAN_Send(void);
     void HeatLimit();
-
-    // 将期望发射频率转化为rpm(转轴)
     float rpm_to_hz(float tar_hz);
-
-    //  将期望频率转化为角度
     float hz_to_angle(float fire_hz);
     void Jamming(float angle, float err);
 
-  private:
+  public:
     float target_Dail_torque = 0;
     float Dail_target_pos;
     float target_friction_L_torque = 0;
     float target_friction_R_torque = 0;
 
-    float target_friction_omega = 5900.0f;
+    float target_friction_omega = 6000.0f;
     float target_torque = 1.5f;
     float target_fire_hz;
-    float Max_dail_angle = 25.0f; // 拨盘最快频率
+    float Max_dail_angle = 25.0f;
     float Motor_Friction_L_Out = 0.0f;
     float Motor_Friction_R_Out = 0.0f;
-    Class_JammingFSM JammingFMS;  
 
-    // 开火标志位
+    Class_JammingFSM JammingFMS;
+    Class_ClickFSM ClickFSM;
+    Class_StopFireFSM StopFireFSM;
+
     uint8_t fire_flag = 0;
+    bool friction_enabled = false;
 
-    // APP::Heat_Detector::Class_FSM_Heat_Limit Heat_Limit;
     HeatControl::HeatController Heat_Limit;
-    // 发射机构控制模式
-    // Adrc Adrc_Friction_L;
-    // Adrc Adrc_Friction_R;
+
     Adrc adrc_Dail_vel;
-
-    // Kpid_t Kpid_Dail_pos;
-    // Kpid_t Kpid_Dail_vel;
-
-    // PID pid_Dail_pos;
-    // PID pid_Dail_vel;
-
-    // Kpid_t Kpid_Friction_L_vel;
     PID pid_Motor_Friction_L_vel;
-
-    // Kpid_t Kpid_Friction_R_vel;
     PID pid_Motor_Friction_R_vel;
 
+    uint32_t trigger_start_tick = 0;
+    bool last_trigger_state = false;
+    bool is_long_press_auto = false;
+    uint32_t fire_confirm_count = 0;
+    bool last_auto_vision_fire_flag = false;
+    bool auto_vision_window_open = false;
+    bool auto_vision_shot_inflight = false;
+    uint8_t auto_vision_window_shot_count = 0;
+    uint32_t auto_vision_last_fire_count = 0;
+    uint32_t auto_vision_next_allowed_tick = 0;
+    uint32_t auto_vision_last_push_tick = 0;
 
-
-    // 用于单发检测，获取上升沿判断是否击发子弹
-    // BSP::Key::SimpleKey key_fire;
+    static constexpr float dail_angle_per_shot = 40.0f;
+    static constexpr uint32_t auto_vision_fire_interval_ms = 120;
+    static constexpr uint32_t auto_vision_retry_interval_ms = 60;
+    static constexpr uint8_t auto_vision_max_shots_per_window = 2;
 };
+
 inline Class_ShootFSM shoot_fsm;
 } // namespace TASK::Shoot
 
-// 将RTOS任务引至.c文件
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    void ShootTask(void *argument);
+void ShootTask(void *argument);
 
 #ifdef __cplusplus
 }

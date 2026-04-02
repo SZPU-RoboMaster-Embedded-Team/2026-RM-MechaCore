@@ -356,6 +356,20 @@ namespace BSP::Motor::DM
     };
 
     /**
+     * @brief J4340电机类
+     */
+    template <uint8_t N> 
+    class J4340 : public DMMotorBase<N>
+    {
+    public:
+        J4340(uint16_t Init_id, const uint8_t (&ids)[N], const uint32_t (&send_idxs)[N])
+            : DMMotorBase<N>(Init_id, ids, send_idxs, 
+                            Parameters(-3.141f, 3.141f, -50.0f, 50.0f, -15.0f, 15.0f, 0.0f, 500.0f, 0.0f, 5.0f))
+        {
+        }
+    };
+
+    /**
      * @brief S2325电机类
      */
     template <uint8_t N> 
@@ -370,6 +384,7 @@ namespace BSP::Motor::DM
     };
 inline J4310<2> Motor4310{0x00 ,{6, 8}, {4, 7}};
 inline S2325<2> Motor2325{0x00 ,{5, 7}, {3, 6}};
+inline J4340<1> Motor4340{0x00 ,{3}, {5}};
 } // namespace BSP::Motor::DM
 
 #endif

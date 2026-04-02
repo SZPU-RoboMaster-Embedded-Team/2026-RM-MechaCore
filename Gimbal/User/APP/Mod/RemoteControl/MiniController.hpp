@@ -72,6 +72,11 @@ class MiniRemoteController : public IRemoteController
         return (remote.mouse().right && remote.mouse().left == true);
     }
 
+    bool isRuneMode() const override
+    {
+        return false;
+    }
+
     bool isStopMode() const override
     {
         // 如果检测到长按，解锁停止模式并保持解锁状态

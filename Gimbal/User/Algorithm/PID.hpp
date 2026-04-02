@@ -8,7 +8,8 @@ class TD
     float u;
     float x1, x2, max_x2;
     float r, h, r2_1;
-    TD(float r = 1.0f, float max_x2 = 0, float h = 0.001f) : r(r), h(h), max_x2(max_x2)
+    TD(float r = 1.0f, float max_x2 = 0, float h = 0.001f)
+        : u(0), x1(0), x2(0), max_x2(max_x2), r(r), h(h), r2_1(0)
     {
     }
 
@@ -67,6 +68,7 @@ class PID
         this->pid.MixI = MixI;
 
         this->pid.td_e.r = 200;
+        this->pid.td_e.h = 0.004f;
     }
     // 位置式pid获取
     double GetPidPos(Kpid_t kpid, double feedback, float max);
@@ -75,10 +77,19 @@ class PID
     {
         pid.cout = 0;
         pid.now_e = 0;
+        pid.last_e = 0;
+        pid.last_last_e = 0;
 
         pid.p = 0;
         pid.i = 0;
         pid.d = 0;
+        pid.Dp = 0;
+        pid.Di = 0;
+        pid.Dd = 0;
+
+        pid.td_e.u = 0;
+        pid.td_e.x1 = 0;
+        pid.td_e.x2 = 0;
     }
     // 清除增量
     void PidRstDelta();

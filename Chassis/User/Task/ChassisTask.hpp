@@ -43,6 +43,8 @@ class Chassis_Task : public Task
     class StopHandler;
     class MoveHandler;
     Class_Slope slope_speed[4];
+    Class_Slope steer_angle_slope[4];
+    bool steer_angle_slope_initialized_[4] = {false, false, false, false};
 
     Alg::CalculationBase::String_IK stringIk;
 
@@ -60,6 +62,8 @@ class Chassis_Task : public Task
     void Filtering();
 
     void PID_Updata();
+
+    float SmoothSteerTarget(uint8_t index, float raw_target_angle, float current_feedback);
 
     void CAN_Setting();
 
