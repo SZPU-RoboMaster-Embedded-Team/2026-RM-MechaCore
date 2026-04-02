@@ -1,106 +1,138 @@
 #include "InHpp.hpp"
+#include "RMRefereeSystemCRC.hpp"
+
 /*  =========================== 全局变量的初始化 ===========================  */ 
-MyRefereeSystemData_t MyRefereeSystemData = {0};//判断裁判系统断连
-robot_status_t ext_robot_status_t_0x0201 = {0};//0x0201 机器人状态数据
-power_heat_data_t ext_power_heat_data_0x0202 = {0};//0x0202 实时功率热量数据
-shoot_data_t shoot_data_0x0207 = {0}; //飞机射速
-game_status_t game_status_0x001 = {0};
+RMRefereeSystemData_t            RMRefereeSystemData            = { 0 };  // 裁判系统当前帧数据
+unsigned char                    MyRefereeSys8Data              = 0;      // 裁判系统串口数据接收缓冲区
 
-//飞镖发射口倒计时
-ext_dart_remaining_time_t ext_dart_remaining_time_0x0105 = { 0 };
-//飞镖机器人客户端指令数据
-ext_dart_client_cmd_t ext_dart_client_cmd_0x020A = { 0 };
-
-unsigned char MyRefereeSys8Data = 0;
-
+game_status_t                    game_status_0x0001             = { 0 };  // 0x0001 比赛状态数据
+dart_info_t                      dart_info_0x0105               = { 0 };  // 0x0105 飞镖发射口倒计时
+robot_status_t                   robot_status_0x0201            = { 0 };  // 0x0201 机器人性能体系数据
+power_heat_data_t                power_heat_data_0x0202         = { 0 };  // 0x0202 实时底盘缓冲能量和射击热量数据
+shoot_data_t                     shoot_data_0x0207              = { 0 };  // 0x0207 实时射击数据
+dart_client_cmd_t                dart_client_cmd_0x020A         = { 0 };  // 0x020A 飞镖机器人客户端指令数据
 
 /*  =========================== 函数的声明 ===========================  */ 
-void MyRefereeSystemParseData(uint8_t* MypDatas,int size);
-void MyRefereeSystemGetData(uint8_t MypData);
-void MyRefereeSystemParse();
-
+static void RMRefereeSystemParseData(uint8_t *MypDatas, uint16_t size);
+static void RMRefereeSystemGetData(uint8_t MypData);
+void RMRefereeSystemParse(void);
 
 /************************************************************************
-* @brief:      	void
-* @param[in]: 	void
-* @retval:      void
-* @details:    	void
+* @brief:       解析裁判系统数据(一帧数据)
 *************************************************************************/
-void MyRefereeSystemParseData(uint8_t* MypDatas,int size)
+static void RMRefereeSystemParseData(uint8_t *MypDatas, uint16_t size)
 {
-	MyRefereeSystemData.SOF = MypDatas[0];
-	MyRefereeSystemData.data_length = MypDatas[1] | MypDatas[2] << 8;
-	MyRefereeSystemData.seq = MypDatas[3];
-	MyRefereeSystemData.CRC8 = MypDatas[4];
-	MyRefereeSystemData.cmd_id = MypDatas[5] | MypDatas[6] << 8;
-	if(MyRefereeSystemData.data_length > 50)
-		return;
-	for(uint16_t i = 0;i < MyRefereeSystemData.data_length;i++)
-	{
-		MyRefereeSystemData.data[i] = MypDatas[7 + i];
-	}
-	MyRefereeSystemData.frame_tail = MypDatas[7 + MyRefereeSystemData.data_length];
-	switch (MyRefereeSystemData.cmd_id)
-	{
-	case 0x001:
-	memcpy(&game_status_0x001,(void*)MyRefereeSystemData.data,sizeof(game_status_0x001));
-		break;
-	case 0x0201:
-		memcpy(&ext_robot_status_t_0x0201,(void*)MyRefereeSystemData.data,sizeof(ext_robot_status_t_0x0201));
-		break;	
-	case 0x0202:
-		memcpy(&ext_power_heat_data_0x0202,(void*)MyRefereeSystemData.data,sizeof(ext_power_heat_data_0x0202));
-		break;	
-	case 0x0207:
-		memcpy(&shoot_data_0x0207,(void*)MyRefereeSystemData.data,sizeof(shoot_data_0x0207));
-	case 0x0105:
-		memcpy(&ext_dart_remaining_time_0x0105,(void*)MyRefereeSystemData.data,sizeof(ext_dart_remaining_time_0x0105));
-		break;
-	case 0x020A:
-		memcpy(&ext_dart_client_cmd_0x020A,(void*)MyRefereeSystemData.data,sizeof(ext_dart_client_cmd_0x020A));
-		break;
-	default:
-		break;
-	}
+    if (size < 9)
+    {
+        return;
+    }
+
+    RMRefereeSystemData.SOF         = MypDatas[0];
+    RMRefereeSystemData.data_length = (uint16_t)(MypDatas[1] | (MypDatas[2] << 8));
+    RMRefereeSystemData.seq         = MypDatas[3];
+    RMRefereeSystemData.CRC8        = MypDatas[4];
+    RMRefereeSystemData.cmd_id      = (uint16_t)(MypDatas[5] | (MypDatas[6] << 8));
+
+    if (RMRefereeSystemData.data_length > sizeof(RMRefereeSystemData.data))
+    {
+        return;
+    }
+
+    for (uint16_t i = 0; i < RMRefereeSystemData.data_length; i++)
+    {
+        RMRefereeSystemData.data[i] = MypDatas[7 + i];
+    }
+
+    uint16_t crc_index = (uint16_t)(7 + RMRefereeSystemData.data_length);
+    if (crc_index + 1 >= size)
+    {
+        return;
+    }
+    RMRefereeSystemData.frame_tail = (uint16_t)(MypDatas[crc_index] | (MypDatas[crc_index + 1] << 8));
+
+    switch (RMRefereeSystemData.cmd_id)
+    {
+    case 0x0001:
+        memcpy(&game_status_0x0001, (void *)RMRefereeSystemData.data, sizeof(game_status_0x0001));
+        break;
+    case 0x0105:
+        memcpy(&dart_info_0x0105, (void *)RMRefereeSystemData.data, sizeof(dart_info_0x0105));
+        break;
+    case 0x0201:
+        memcpy(&robot_status_0x0201, (void *)RMRefereeSystemData.data, sizeof(robot_status_0x0201));
+        break;
+    case 0x0202:
+        memcpy(&power_heat_data_0x0202, (void *)RMRefereeSystemData.data, sizeof(power_heat_data_0x0202));
+        break;
+    case 0x0207:
+        memcpy(&shoot_data_0x0207, (void *)RMRefereeSystemData.data, sizeof(shoot_data_0x0207));
+        break;
+    case 0x020A:
+        memcpy(&dart_client_cmd_0x020A, (void *)RMRefereeSystemData.data, sizeof(dart_client_cmd_0x020A));
+        break;
+    default:
+        break;
+    }
 }
 
-
 /************************************************************************
-* @brief:      	void
-* @param[in]: 	void
-* @retval:      void
-* @details:    	void
+* @brief:       裁判系统串口数据接收状态机（按字节喂入）
 *************************************************************************/
-void MyRefereeSystemGetData(uint8_t MypData)
+static void RMRefereeSystemGetData(uint8_t MypData)
 {
-	static int idx = 0,MypDataSize = 0;
-	static uint8_t MypDataS[50] = { 0 };
-	if(MypData == 0xA5)
-	{
-			MypDataSize++;
-	}
-	if(MypDataSize == 2)
-	{
-		MyRefereeSystemParseData(MypDataS,idx);
-		MypDataSize = 1;
-		idx = 0;
-	}
-	if(MypDataSize == 1)
-	{
-		MypDataS[idx++] = MypData;
-	}
+    /* 按照协议：frame_header(5) + cmd_id(2) + data(n) + frame_tail(2) */
+    static uint8_t  rx_buf[128] = {0};
+    static uint16_t rx_index    = 0;
+    static uint16_t frame_len   = 0;
+
+    if (rx_index == 0)
+    {
+        if (MypData == 0xA5)
+        {
+            rx_buf[rx_index++] = MypData;
+        }
+        return;
+    }
+
+    rx_buf[rx_index++] = MypData;
+
+    if (rx_index == 5)
+    {
+        if (!Verify_CRC8_Check_Sum(rx_buf, 5))
+        {
+            rx_index  = 0;
+            frame_len = 0;
+            return;
+        }
+
+        uint16_t data_length = (uint16_t)(rx_buf[1] | (rx_buf[2] << 8));
+        frame_len            = (uint16_t)(5 + 2 + data_length + 2);
+
+        if (frame_len > sizeof(rx_buf))
+        {
+            rx_index  = 0;
+            frame_len = 0;
+            return;
+        }
+    }
+
+    if (frame_len > 0 && rx_index >= frame_len)
+    {
+        if (Verify_CRC16_Check_Sum(rx_buf, frame_len))
+        {
+            RMRefereeSystemParseData(rx_buf, frame_len);
+        }
+
+        rx_index  = 0;
+        frame_len = 0;
+    }
 }
 
-
 /************************************************************************
-* @brief:      	void
-* @param[in]: 	void
-* @retval:      void
-* @details:    	void
+* @brief:       裁判系统解析入口（在串口中断回调中调用）
 *************************************************************************/
-void MyRefereeSystemParse()
+void RMRefereeSystemParse(void)
 {
-	MyRefereeSystemGetData(MyRefereeSys8Data);
-	HAL_UART_Receive_IT(&HuartHandle_RMRefereeSystem,&MyRefereeSys8Data,sizeof(MyRefereeSys8Data));
-	//Report.RMRefereeSystemCom.Count_Paparazzi++;
+    RMRefereeSystemGetData(MyRefereeSys8Data);
+    HAL_UART_Receive_IT(&HuartHandle_RMRefereeSystem, &MyRefereeSys8Data, sizeof(MyRefereeSys8Data));
 }

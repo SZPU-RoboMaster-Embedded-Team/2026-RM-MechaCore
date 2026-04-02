@@ -11,12 +11,12 @@ extern "C" {
 extern QueueHandle_t xQueue;
 extern osMessageQueueId_t Queue_DT7ToGimbalHandle;
 
-__weak void PIDControl(void *argument);
-__weak void EventReport(void *argument);
-__weak void Dart1(void *argument);
-__weak void UartSend(void *argument);
-__weak void VisionSend(void *argument);
-__weak void TimerCallback(void *argument);
+__weak void Motor_Task_Entry(void *argument);
+__weak void Info_Task_Entry(void *argument);
+__weak void Dart_Task_Entry(void *argument);
+__weak void Uart_Task_Entry(void *argument);
+__weak void Vision_Task_Entry(void *argument);
+__weak void SystemMonitor_Task_Entry(void *argument);
 
 /* USER CODE END Includes */
 

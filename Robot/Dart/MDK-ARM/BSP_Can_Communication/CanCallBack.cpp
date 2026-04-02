@@ -8,7 +8,7 @@ CAN_HandleTypeDef *Can1_HandleTypedef = &hcan1;
 * @brief:      	HAL_CAN_RxFifo0MsgPendingCallback: Hal库的Can的通道0接收中断函数
 * @param[in]: 	void
 * @retval:      void
-* @details:    	该函数用于接收机甲大师电机的Can数据,主要接收YawM6020,PitchM3508,DialM3508的电机数据
+* @details:    	该函数用于接收机甲大师电机的Can数据,主要接收Yaw轴、升降、上膛和拉簧电机的数据
 ***********************************************************************
 **/
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)

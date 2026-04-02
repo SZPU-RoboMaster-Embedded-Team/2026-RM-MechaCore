@@ -1,198 +1,353 @@
 #include "InHpp.hpp"
 
-/*  =========================== 全局变量的初始化 ===========================  */
-AutoLaunch_t AutoLaunch;
-int Set_Yaw_Angle[4]   = {3830, 3830, 3830, 3830}; // 预设的yaw角度
-int Set_Motor_Speed[4] = {4000, 4000, 4000, 4000}; // 预设的电机转速
+/*  =========================== 全局变量 ===========================  */
+AutoLaunchSystem AutoLaunch;
 
-/**
- * @brief 飞镖自动发射函数
- * @details 该函数根据不同的模式启动自动发射流程
- * @param mode
- */
-void AutoLaunch_c::StartAutoLaunch(int mode)
+/*  ===================== 公用动作封装 =====================  */
+
+void AutoLaunchSystem::StopLoadMotors(void) {
+    Motors[INDEX_RIGHT_LOAD].Target = 0;
+}
+
+void AutoLaunchSystem::StopLiftMotors(void) {
+    Motors[INDEX_LEFT_LIFT].Target  = 0;
+    Motors[INDEX_RIGHT_LIFT].Target = 0;
+}
+
+// 第3、4发需要推镖滑落
+bool AutoLaunchSystem::NeedSlideDart(void) const {
+    return (LaunchedCount >= 2);
+}
+
+// 第2、3、4发需要升降台升降
+bool AutoLaunchSystem::NeedPlatformMove(void) const {
+    return (LaunchedCount >= 1);
+}
+
+/*  ===================== 主状态机分发 =====================  */
+
+void AutoLaunchSystem::StartAutoLaunch(int mode)
 {
-    // 处理启动条件
+    // 判断是否符合触发新发射流程的条件
     HandleLaunchTrigger(mode);
 
-    // 状态机处理
     switch (LaunchState) {
-        case INIT_LAUNCH:
-            HandleInitLaunch();
+        case AIM_RESET:
+            HandleAimReset();
             break;
-        case WAIT_LIMIT_TRIGGER:
-            HandleWaitLimit();
+
+        case RELOAD_AND_AIM:
+        {
+            // --------- 瞄准轨：每个 tick 都持续运行 ---------
+            VisionControl();
+
+            // --------- 装填轨：子状态机独立推进 ---------
+            HandleReloadSubMachine();
+
+            // --------- 汇合判断：两条轨道都完成 → 进入 RELEASE ---------
+            bool aimReady = (VisionUartReceive.DetectFlag == 3 && Angle_Reached && hasAimedThisDart);
+
+            // [调试开关] 如果想跳过视觉瞄准直接发射，取消下面这一行的注释：
+            // aimReady = true; 
+
+            if (reloadReady && aimReady) {
+                LaunchState = RELEASE;
+                LaunchTime  = SystemTick;
+            }
             break;
-        case FIRST_DART_LAUNCH:
-            HandleFirstDartLaunch();
+        }
+
+        case RELEASE:
+            // 一进入本状态，立刻开启发射偏角 (150.0f)
+            ServoControl.SetAngle(3, 150.0f);
+
+            // 等待 500ms 确保机械结构完全释放
+            if (SystemTick - LaunchTime > 500) {
+                // 发射动作完成后，复位到 待机/锁定状态 (175.0f)
+                ServoControl.SetAngle(3, 175.0f);
+                LaunchState = DART_DONE;
+            }
             break;
-        case YAW_ADJUSTMENT:
-            HandleYawAdjustment();
+
+        case DART_DONE:
+            LaunchedCount++;
+            if (LaunchedCount >= 4) {
+                // 4发全部打完
+                StopLoadMotors();
+                StopLiftMotors();
+                LaunchState = FINISH_LAUNCH;
+            } else {
+                // 还有下一发, 先更新序号再进入瞄准（视觉需要在瞄准前知道是第几发）
+                CurrentDartIndex = LaunchedCount + 1;  // LaunchedCount=1→第2发, =2→第3发, =3→第4发
+                hasAimedThisDart = false;
+                LaunchState = AIM_RESET;
+            }
             break;
-        case SECOND_DART_LAUNCH:
-            HandleSecondDartLaunch();
+
+        case FINISH_LAUNCH:
+            // 在完成发射后，务必把发射台运动到上方（到达上方限位后停止）
+            Motors[INDEX_LEFT_LIFT].Target  = LIFT_SPEED_UP;
+            Motors[INDEX_RIGHT_LIFT].Target = -LIFT_SPEED_UP;
+            
+            // 使用 Dart 新增的感知接口判断限位
+            // Dart.PlatformLimitLH == 0 语义等同于：左侧不处于未触碰的安全高位 (!IsLeftPlatformHighLimit)
+            if (!Dart.IsLeftPlatformHighLimit()) {  
+                StopLiftMotors();
+            }
+
+            // 复位推镖舵机 (4号) 和 释放舵机 (3号)
+            ServoControl.SetAngle(4, 0.0f);
+            ServoControl.SetAngle(3, 175.0f);
             break;
-        case STOP_LAUNCH:
-            HandleStopLaunch();
+
+        case IDLE:
+        default:
+            // 在空闲时保持复位保护
+            ServoControl.SetAngle(4, 0.0f);
+            ServoControl.SetAngle(3, 175.0f);
             break;
     }
 
-    // 检查是否需要重置状态
     CheckStateReset(mode);
 }
 
-// 处理发射触发条件
-void AutoLaunch_c::HandleLaunchTrigger(int mode)
+// -------------------------------------------------------------------------
+// 内部拆分子状态机
+// -------------------------------------------------------------------------
+
+void AutoLaunchSystem::HandleAimReset()
 {
-    if (mode == DT7CtrlMode && LaunchedCount <= 2 && LaunchState == IDLE) {
+    // 在开始这发飞镖的新一轮瞄准脉冲前，重置自瞄内部的所有标志位
+    targetLocked     = false;
+    hasCounted       = false;
+    hasAimedThisDart = false;
+
+    // --- 稳健重置逻辑 (ResetStage 分段执行) ---
+    if (ResetStage == 0) {
+        if (VisionUartSend.AimingFinishCount == 0) {
+            // 原本就是 0，先拉高制造上升沿
+            VisionUartSend.AimingFinishCount = 250;
+            LaunchTime = SystemTick;
+            ResetStage = 1; // 进入高脉冲阶段
+        } else {
+            // 原本不是 0，直接打回 0
+            VisionUartSend.AimingFinishCount = 0;
+            LaunchTime = SystemTick;
+            ResetStage = 2; // 直接进入归零等待阶段
+        }
+    } else if (ResetStage == 1) {
+        // 高脉冲维持阶段：等待 100ms
+        if (SystemTick - LaunchTime >= 100) {
+            VisionUartSend.AimingFinishCount = 0;
+            LaunchTime = SystemTick;
+            ResetStage = 2; // 转入归零等待
+        }
+    } else if (ResetStage == 2) {
+        // 归零等待阶段：确保上位机看到 0 并重置逻辑后再进入自瞄
+        if (SystemTick - LaunchTime >= 100) {
+            LaunchState = RELOAD_AND_AIM;
+            LaunchTime  = SystemTick; // 重置给下一阶段使用
+            ResetStage  = 0;          // 重置子状态机
+            
+            // 初始化进入物理装填轨道
+            reloadSubState = RSUB_PLATFORM_UP;
+            reloadReady    = false;
+            reloadTime     = SystemTick;
+        }
+    }
+}
+
+void AutoLaunchSystem::HandleReloadSubMachine()
+{
+    switch (reloadSubState) {
+
+        // --- 升降台上升 (仅第2、3、4发，上一发释放后升降台需要回到顶部) ---
+        case RSUB_PLATFORM_UP:
+            if (!NeedPlatformMove()) {
+                reloadSubState = RSUB_SLIDE_DART;
+                break;
+            }
+            Motors[INDEX_LEFT_LIFT].Target  = LIFT_SPEED_UP;
+            Motors[INDEX_RIGHT_LIFT].Target = -LIFT_SPEED_UP;
+            
+            // 到达向上限位后停止 
+            if (!Dart.IsLeftPlatformHighLimit()) {  
+                StopLiftMotors();
+                reloadSubState = RSUB_SLIDE_DART;
+                reloadTime = SystemTick; 
+            }
+            break;
+
+        // --- 推镖滑落 (仅第3、4发) ---
+        case RSUB_SLIDE_DART:
+            if (!NeedSlideDart()) {
+                reloadSubState = RSUB_DOWN_PARALLEL;
+                reloadTime = SystemTick;
+                break;
+            }
+            
+            if (SystemTick - reloadTime < 400) {
+                ServoControl.SetAngle(4, 25.0f);
+            } else {
+                ServoControl.SetAngle(4, 0.0f);
+            }
+            
+            // 给舵机 500ms 的物理滑落时间
+            if (SystemTick - reloadTime > 500) {
+                ServoControl.SetAngle(4, 0.0f);
+                reloadSubState = RSUB_DOWN_PARALLEL;
+                reloadTime = SystemTick;
+            }
+            break;
+
+        // --- 并行下行 (升降台下降 + 上膛下行) ---
+        case RSUB_DOWN_PARALLEL:
+        {
+            // 升降台下行轨道
+            bool platformDone = true;
+            if (NeedPlatformMove()) {
+                // 原逻辑验证两个底端限位是否触发
+                if (!(!Dart.IsRightPlatformLowLimit() && !Dart.IsLeftPlatformLowLimit())) {
+                    Motors[INDEX_LEFT_LIFT].Target  = -LIFT_SPEED_DOWN;
+                    Motors[INDEX_RIGHT_LIFT].Target = LIFT_SPEED_DOWN;
+                    platformDone = false;
+                } else {
+                    StopLiftMotors();
+                }
+            }
+
+            // 上膛下行轨道
+            bool reloadDone = false;
+            Motors[INDEX_RIGHT_LOAD].Target = LOAD_SPEED_DOWN;
+            if (Dart.IsReloadLowLimitReached()) { 
+                StopLoadMotors();
+                reloadDone = true;
+            }
+
+            if (platformDone && reloadDone) {
+                StopLiftMotors();
+                StopLoadMotors();
+                reloadSubState = RSUB_RELOAD_UP;
+                reloadTime = SystemTick;
+            }
+            break;
+        }
+
+        // --- 上膛上行 ---
+        case RSUB_RELOAD_UP:
+            Motors[INDEX_RIGHT_LOAD].Target = LOAD_SPEED_UP;
+            if (Dart.IsReloadHighLimitReached()) { 
+                StopLoadMotors();
+                if (!NeedPlatformMove()) {
+                    reloadSubState = RSUB_PLATFORM_CHECK; // 第1发特殊检查
+                } else {
+                    reloadSubState = RSUB_DONE;
+                }
+            }
+            break;
+
+        // --- 升降台检查到顶 (第1发专用) ---
+        case RSUB_PLATFORM_CHECK:
+            if (!Dart.IsLeftPlatformHighLimit()) {  
+                StopLiftMotors();
+                reloadSubState = RSUB_DONE;
+            } else {
+                Motors[INDEX_LEFT_LIFT].Target  = LIFT_SPEED_UP;
+                Motors[INDEX_RIGHT_LIFT].Target = -LIFT_SPEED_UP;
+            }
+            break;
+
+        case RSUB_DONE:
+            reloadReady = true;
+            break;
+    }
+}
+
+// -------------------------------------------------------------------------
+// 外部命令与辅助工具
+// -------------------------------------------------------------------------
+
+void AutoLaunchSystem::HandleLaunchTrigger(int mode)
+{
+    if (mode == DT7CtrlMode && LaunchedCount == 0 && LaunchState == IDLE) {
         StartNewLaunch();
-    } else if (mode == RfSysMode && Dart.RefereeSystemState == 2 && LaunchedCount <= 2 && LaunchState == IDLE) {
+    } else if (mode == RfSysMode && Dart.RefereeSystemState == 2 && LaunchedCount == 0 && LaunchState == IDLE) {
         StartNewLaunch();
     } else if (mode == RfSysMode && Dart.RefereeSystemState == 0 && DT7UartCom.rc.ch3 < 370) {
         VisionControl();
     }
 }
 
-// 开始新的发射
-void AutoLaunch_c::StartNewLaunch()
+void AutoLaunchSystem::StartNewLaunch()
 {
-    LaunchedCount++;
-    if (LaunchedCount < 3)
-        LaunchState = INIT_LAUNCH;
+    LaunchedCount    = 0;
+    CurrentDartIndex = 1;          // 第一发飞镖，在进入 AIM_RESET 之前就确定
+    ResetStage       = 0;            
+    hasAimedThisDart = false;  
+    reloadReady      = false;       
+    reloadSubState   = RSUB_PLATFORM_UP;
+    LaunchState      = AIM_RESET;
 }
 
-/*****************************************************************************************************************/
-// 处理初始化发射状态
-void AutoLaunch_c::HandleInitLaunch()
-{
-    Update_Yaw_And_FrictionSpeed();
-
-    int target = (LaunchedCount == 1) ? 10000 : -10000;
-    Set_Motor_Target(&SpeedPID_SlidePlatformM2006.Target, target, -10000, 10000);
-
-    LaunchState = WAIT_LIMIT_TRIGGER;
-}
-
-// 处理等待限位触发状态
-void AutoLaunch_c::HandleWaitLimit()
-{
-    if ((Dart.LeftLimit == 1 && LaunchedCount == 1) || (Dart.RightLimit == 1 && LaunchedCount == 2)) {
-        Set_Motor_Target(&SpeedPID_SlidePlatformM2006.Target, 0, 0, 0); // 如果到达限位，停止左右丝杆
-        // 如果角度到达
-        if (Angle_Reached == true) {
-
-            Set_Motor_Target(&SpeedPID_VerticalLiftM2006.Target, 6000, -6000, 6000); // 设置上下丝杆目标转速
-            LaunchTime = SystemTick;                                                 // 重置发射时间计数
-
-            LaunchState = FIRST_DART_LAUNCH; // 更新自动发射状态
-        }
-    }
-}
-
-// 处理第一次发射状态
-void AutoLaunch_c::HandleFirstDartLaunch()
-{
-    // 发射第一次
-    if (SystemTick - LaunchTime > 3700) { // 如果发射时间超过3700ms
-
-        Set_Motor_Target(&SpeedPID_VerticalLiftM2006.Target, 0, 0, 0); // 停止上下丝杆
-        MotorConfigID++;                                               // 切换到下一个电机配置ID
-        Update_Yaw_And_FrictionSpeed();                                // 更新Yaw轴角度和摩擦轮速度
-        LaunchTime = SystemTick;                                       // 重置发射时间计数
-
-        LaunchState = YAW_ADJUSTMENT; // 更新自动发射状态
-    }
-}
-
-// 处理Yaw角度调整状态
-void AutoLaunch_c::HandleYawAdjustment()
-{
-    if (Angle_Reached == true) {
-
-        LaunchTime = SystemTick;                                                 // 重置发射时间计数
-        Set_Motor_Target(&SpeedPID_VerticalLiftM2006.Target, 6000, -6000, 6000); // 设置上下丝杆目标转速
-
-        LaunchState = SECOND_DART_LAUNCH; // 更新自动发射状态
-    }
-}
-
-// 处理第二次发射状态
-void AutoLaunch_c::HandleSecondDartLaunch()
-{
-    // 发射第二次
-    if (SystemTick - LaunchTime > 3700) {                                         // 如果发射时间超过3700ms
-        Set_Motor_Target(&SpeedPID_VerticalLiftM2006.Target, -6000, -6000, 6000); // 停止上下丝杆，并回退
-        MotorConfigID++;                                                          // 切换到下一个电机配置ID
-        LaunchTime = SystemTick;                                                  // 重置发射时间计数
-
-        LaunchState = STOP_LAUNCH; // 更新自动发射状态
-    }
-}
-
-// 处理结束发射状态
-void AutoLaunch_c::HandleStopLaunch()
-{
-    if (SystemTick - LaunchTime > 7500) {
-        Set_Motor_Target(&SpeedPID_VerticalLiftM2006.Target, 0, 0, 0); // 停止上下丝杆
-        Set_Motor_Target(&SpeedPID_RightDownFriction.Target, 0, 0, 0); // 停止摩擦轮
-
-        LaunchState = FINISH_LAUNCH; // 更新自动发射状态
-    }
-}
-
-/*****************************************************************************************************************/
-
-// 检查是否需要重置状态
-void AutoLaunch_c::CheckStateReset(int mode)
+void AutoLaunchSystem::CheckStateReset(int mode)
 {
     bool shouldReset = ((DT7UartCom.rc.s2 == MID && mode == DT7CtrlMode) ||
                         (Dart.RefereeSystemState == 0 && mode == RfSysMode)) &&
                        LaunchState == FINISH_LAUNCH;
 
     if (shouldReset) {
-        LaunchState = IDLE;
+        LaunchState      = IDLE;
+        LaunchedCount    = 0;
+        CurrentDartIndex = 0;
+        ResetStage       = 0;
+        reloadReady      = false;
+        reloadSubState   = RSUB_PLATFORM_UP;
     }
 }
 
-void AutoLaunch_c::VisionControl()
+void AutoLaunchSystem::VisionControl()
 {
-    // 视觉控制函数，暂时未实现
-    // 这里可以添加视觉相关的控制逻辑
-    // Set_Motor_Target(&SpeedPID_AngleSensorM3508.Target, VisionUartReceive.Target_Yaw);
-    Dart.Yaw_Angle = VisionUartReceive.Target_Yaw;
+    if (DT7UartCom.rc.ch4 > 1600) {
+        VisionUartSend.AimingFinishCount = 0;
+    }
+
+    static const uint8_t DETECT_FLAG_TARGET = 2; // 视觉检测到目标并请求瞄准
+    static const uint8_t DETECT_FLAG_FIRE   = 3; // 视觉瞄准完成并请求开火
+
+    static uint8_t last_detect_flag = DETECT_FLAG_FIRE; 
+    if (VisionUartReceive.DetectFlag == DETECT_FLAG_FIRE && last_detect_flag != DETECT_FLAG_FIRE) {
+        current_song = &Song_VisionTargetLocked;
+        playState = 1;
+        isBuzzerPlaying = false; 
+    }
+    last_detect_flag = VisionUartReceive.DetectFlag;
+
+    if (VisionUartReceive.DetectFlag != DETECT_FLAG_TARGET && VisionUartReceive.DetectFlag != DETECT_FLAG_FIRE) {
+        targetLocked = false;
+        hasCounted   = false;
+        return;
+    }
+
+    if (!targetLocked && VisionUartReceive.DetectFlag == DETECT_FLAG_TARGET) {
+        Dart.Yaw_Angle = VisionUartReceive.Target_Yaw;
+        targetLocked   = true;
+        Angle_Reached  = false;
+        hasCounted     = false;
+    }
+
+    if (targetLocked && Angle_Reached && !hasCounted) {
+        VisionUartSend.AimingFinishCount++; 
+        hasCounted = true; 
+        hasAimedThisDart = true; 
+    }
 }
 
-/**
- * @brief 更新Yaw轴角度和摩擦轮速度
- * @details 该函数用于更新Yaw轴角度和摩擦轮速度，并调用限制函数确保角度在有效范围内
- */
-void AutoLaunch_c::Update_Yaw_And_FrictionSpeed()
+void AutoLaunchSystem::SyncYawAngle()
 {
-    // 更新Yaw轴角度和摩擦轮速度
-    Set_Motor_Target(&Dart.Yaw_Angle, Set_Yaw_Angle[MotorConfigID]);
-    Set_Motor_Target(&SpeedPID_RightDownFriction.Target, Set_Motor_Speed[MotorConfigID]); // 设置摩擦轮目标转速
-}
-
-/**
- * @brief 同步Yaw轴目标角度到PID控制器
- * @details 该函数将Yaw轴的目标角度同步到PID控制器中，以便进行控制
- */
-void AutoLaunch_c::SyncYawAngle()
-{
-    if (std::abs(Set_Yaw_Angle[MotorConfigID] - SpeedPID_AngleSensorM3508.Current) >= 2)
+    if (std::abs(Dart.Yaw_Angle - SpeedPID_AngleSensorM3508.Current) >= 1)
         Angle_Reached = false;
     else
         Angle_Reached = true;
 
     SpeedPID_AngleSensorM3508.Target = Dart.Yaw_Angle;
-}
-
-/**
- * @brief 设置电机目标值
- * @param value 电机目标值
- * @details 该函数用于设置电机的目标值，并调用限制函数确保角度在有效范围内
- */
-void AutoLaunch_c::Set_Motor_Target(int *target_motor, int value, int min, int max)
-{
-    *target_motor = Dart.Limit_Value(value, min, max);
 }

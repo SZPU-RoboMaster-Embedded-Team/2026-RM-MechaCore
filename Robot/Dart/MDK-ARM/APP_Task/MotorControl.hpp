@@ -1,43 +1,42 @@
-#ifndef __PIDControl_Hpp
-#define __PIDControl_Hpp
+#ifndef __MotorControl_Hpp
+#define __MotorControl_Hpp
 
-enum JointMotorRunTypdef
-{
-    MotorMode = 1
-    ,ImuMode = 2
-    ,PosMode = 3
-    ,SpeedMode = 4
+#include "RmMotor.hpp"
+#include "PID.hpp"
+#include "Filter.hpp"
+
+/**
+ * @brief 电机对象类 (移植后版本)
+ */
+class MotorObject {
+public:
+    RmMotorMeasure_t  Feedback;
+    ALG::PID::PID     SpeedPID;
+    TD_t              Filter;
+    float             Target;
+    int               Output;
+
+    MotorObject() : Target(0), Output(0) {
+        memset(&Feedback, 0, sizeof(Feedback));
+    }
+
+    void Update() {
+        Output = (int)SpeedPID.UpDate(Target, (float)Feedback.RPM);
+    }
 };
 
-typedef struct 
-{
-    JointMotorRunTypdef YawM6020;
-    JointMotorRunTypdef PitchM3508;
-    JointMotorRunTypdef DialM3508;
-}JointMotorRunMode_t;
-extern JointMotorRunMode_t JointMotorRunMode;
+// 电机索引枚举
+enum MotorIndex_e {
+    INDEX_RESERVED = 0,
+    INDEX_LEFT_LIFT,
+    INDEX_RIGHT_LOAD,
+    INDEX_LEFT_LOAD,
+    INDEX_YAW,
+    INDEX_RIGHT_LIFT,
+    INDEX_SPRING,
+    TOTAL_CONTROL_MOTORS
+};
 
-typedef struct 
-{
-    // int YawM6020;
-    // int PitchM3508;
-    // int UpFriction;
-    // int RightDownFriction;
-    // int LeftDownFriction;
-    // int DialM3508;
-    // int LeftFriction;
-    // int RightFriction;
-    int RightDownFriction;
-    int RightUpFriction;
-    int LeftUpFriction;
-    int LeftDownFriction;
-    int YawMotor6020;
-    int SlidePlatformM2006;
-    int VerticalLiftM2006;
-    int AngleSensorM3508;
-}FinalOut_Can_t;
-extern FinalOut_Can_t FinalOut_Can;
-
-
+extern MotorObject Motors[TOTAL_CONTROL_MOTORS];
 
 #endif

@@ -1,68 +1,116 @@
-#include "InHpp.hpp"
-/* 全局变量的初始化 --------------------------------------------------*/
+#include "Filter.hpp"
+#include <cmath>
+#include <math.h>
 
-/* 全局变量的初始化 --------------------------------------------------*/
-
-/*Kalman_Begin-----------------------------------------------------------------------------------------------------------------*/
-void kalmanCreate(Kalman_t *p,float T_Q,float T_R)
+/*  =========================== 卡尔曼滤波器类实现 ===========================  */
+KalmanFilter::KalmanFilter(float T_Q, float T_R)
 {
-    //kalman* p = ( kalman*)malloc(sizeof( kalman));
-    p->X_last = (float)0;
-    p->P_last = 0;
-    p->Q = T_Q;
-    p->R = T_R;
-    p->A = 1;
-    p->H = 1;
-    p->X_mid = p->X_last;
-    //return p;
+    X_last = 0.0f;
+    P_last = 1000.0f;
+    Q = T_Q;
+    R = T_R;
+    A = 1.0f;
+    H = 1.0f;
+    X_mid = X_last;
+    X_now = 0.0f;
+    P_mid = 0.0f;
+    P_now = 0.0f;
+    kg = 0.0f;
 }
 
-float KalmanFilter(Kalman_t* p,float dat)
+float KalmanFilter::filter(float dat)
 {
-    p->X_mid =p->A*p->X_last;                     //x(k|k-1) = AX(k-1|k-1)+BU(k)
-    p->P_mid = p->A*p->P_last+p->Q;               //p(k|k-1) = Ap(k-1|k-1)A'+Q
-    p->kg = p->P_mid/(p->P_mid+p->R);             //kg(k) = p(k|k-1)H'/(Hp(k|k-1)'+R)
-    p->X_now = p->X_mid+p->kg*(dat-p->X_mid);     //x(k|k) = X(k|k-1)+kg(k)(Z(k)-HX(k|k-1))
-    p->P_now = (1-p->kg)*p->P_mid;                //p(k|k) = (I-kg(k)H)P(k|k-1)
-    p->P_last = p->P_now;                         //????
-    p->X_last = p->X_now;
-    return p->X_now;
+    X_mid = A * X_last;
+    P_mid = A * P_last + Q;
+    kg = P_mid / (P_mid + R);
+    X_now = X_mid + kg * (dat - X_mid);
+    P_now = (1 - kg) * P_mid;
+    P_last = P_now;
+    X_last = X_now;
+    return X_now;
 }
-/*Kalman_End-----------------------------------------------------------------------------------------------------------------*/
 
-
-
-/*TD_Begin-----------------------------------------------------------------------------------------------------------------*/
-float TdFilter(TD_t *TD,float Input)
+void KalmanFilter::reinit(float T_Q, float T_R)
 {
-    float fh= -TD->R*TD->R*(TD->v1-Input)-2*TD->R*TD->v2;
-    TD->v1+=TD->v2*TD->H;
-    TD->v2+=fh*TD->H;
-	return TD->v1;
+    X_last = 0.0f;
+    P_last = 1000.0f;
+    Q = T_Q;
+    R = T_R;
+    X_mid = X_last;
 }
-/*TD_End-----------------------------------------------------------------------------------------------------------------*/
 
+float KalmanFilter::getState() const { return X_now; }
+float KalmanFilter::getPrediction() const { return X_mid; }
+float KalmanFilter::getGain() const { return kg; }
 
-
-/*LPF_Begin-----------------------------------------------------------------------------------------------------------------*/
-float LPFFilter(LPF_Data_t *LPF_Data,float Inupt)
+/*  =========================== TD跟踪微分器类实现 ===========================  */
+TDFilter::TDFilter(float init_R, float init_H)
 {
-	float Out=0;
-	Out=(LPF_Data->Ratio*Inupt) + ((1-LPF_Data->Ratio)*(LPF_Data->Last_Out));
-	LPF_Data->Last_Out=Out;
-	return Out;
+    v1 = 0.0f;
+    v2 = 0.0f;
+    R = init_R;
+    H = init_H;
 }
-/*LPF_End-----------------------------------------------------------------------------------------------------------------*/
 
-
-/*LimitFilter_Begin-----------------------------------------------------------------------------------------------------------------*/
-float LMFFilter(LMF_Data_t *LMF_Data,float Inupt)
+float TDFilter::filter(float Input)
 {
-	float Error=fabs(Inupt-LMF_Data->Last_Out);
-	if(Error<=LMF_Data->Limit_Ratio)
-	Inupt=LMF_Data->Last_Out;
-	LMF_Data->Last_Out=Inupt;
-	
-	return Inupt;
+    float fh = -R * R * (v1 - Input) - 2 * R * v2;
+    v1 += v2 * H;
+    v2 += fh * H;
+    return v1;
 }
-/*LimitFilter_End-----------------------------------------------------------------------------------------------------------------*/
+
+void TDFilter::setParams(float new_R, float new_H)
+{
+    R = new_R;
+    H = new_H;
+}
+
+float TDFilter::getDerivative() const { return v2; }
+
+/*  =========================== 一阶低通滤波器类实现 ===========================  */
+LPFFilter::LPFFilter(float ratio)
+{
+    Last_Out = 0.0f;
+    Ratio = (ratio >= 0.0f && ratio <= 1.0f) ? ratio : 0.5f;
+}
+
+float LPFFilter::filter(float Input)
+{
+    float Out = (Ratio * Input) + ((1 - Ratio) * Last_Out);
+    Last_Out = Out;
+    return Out;
+}
+
+void LPFFilter::setRatio(float ratio)
+{
+    Ratio = (ratio >= 0.0f && ratio <= 1.0f) ? ratio : 0.5f;
+}
+
+float LPFFilter::getOutput() const { return Last_Out; }
+float LPFFilter::getRatio() const { return Ratio; }
+
+/*  =========================== 限幅滤波器类实现 ===========================  */
+LMFFilter::LMFFilter(float limit_ratio)
+{
+    Last_Out = 0.0f;
+    Limit_Ratio = limit_ratio;
+}
+
+float LMFFilter::filter(float Input)
+{
+    float Error = fabs(Input - Last_Out);
+    if (Error > Limit_Ratio) {
+        Input = Last_Out;
+    }
+    Last_Out = Input;
+    return Input;
+}
+
+void LMFFilter::setLimit(float limit_ratio)
+{
+    Limit_Ratio = limit_ratio;
+}
+
+float LMFFilter::getOutput() const { return Last_Out; }
+float LMFFilter::getLimitRatio() const { return Limit_Ratio; }

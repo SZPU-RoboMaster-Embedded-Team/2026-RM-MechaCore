@@ -1,75 +1,72 @@
 #ifndef __Filter_Hpp
 #define __Filter_Hpp
-/* C++代码的声明 ----------------------------------------------------------*/
+/* 滤波器库 (移植自 core/Alg/Filter) ------------------------------------------*/
 
-/* USER CODE BEGIN Includes */
-/*Kalman_Begin-----------------------------------------------------------------------------------------------------------------*/
-typedef struct 
+/*  =========================== 卡尔曼滤波器类 ===========================  */
+class KalmanFilter
 {
-    float X_last;
-    float X_mid; 
-    float X_now; 
-    float P_mid; 
-    float P_now;  
-    float P_last; 
-    float kg;     
-    float A;   
-    float Q;
+private:
+    float X_last, X_mid, X_now;
+    float P_mid, P_now, P_last;
+    float kg, A, Q, R, H;
+
+public:
+    KalmanFilter(float T_Q = 0.0001f, float T_R = 0.0001f);
+    float filter(float dat);
+    void reinit(float T_Q, float T_R);
+    float getState() const;
+    float getPrediction() const;
+    float getGain() const;
+};
+
+/*  =========================== TD跟踪微分器类 ===========================  */
+class TDFilter
+{
+private:
+    float v1, v2;
     float R;
     float H;
-}Kalman_t;
-float KalmanFilter(Kalman_t* p,float dat);
-void kalmanCreate(Kalman_t *p,float T_Q,float T_R);
-/*Kalman_End-----------------------------------------------------------------------------------------------------------------*/
 
+public:
+    TDFilter(float init_R = 100.0f, float init_H = 0.01f);
+    float filter(float Input);
+    void setParams(float new_R, float new_H);
+    float getDerivative() const;
+};
 
-
-/*TD_Begin-----------------------------------------------------------------------------------------------------------------*/
-typedef struct TD_t
-{     
-	float v1,v2; 
-	float R;           
-	float H;           
-}TD_t;
-float TdFilter(TD_t *TD,float Input);
-// extern TD_t TD_UpFriction;
-// extern TD_t TD_LeftDonwFrictionWheel;
-// extern TD_t TD_RIghtDownFrictionWheel;
-// extern TD_t TD_LeftFrictionWheel;
-// extern TD_t TD_RightFrictionWheel;
-// extern TD_t TD_VisionYaw;
-// extern TD_t TD_VisionPitch;
-
-extern TD_t TD_RightDownFriction;
-extern TD_t TD_RightUpFriction;
-extern TD_t TD_LeftUpFriction;
-extern TD_t TD_LeftDownFriction;
-extern TD_t TD_AngleSensor;
-
-/*TD_End-----------------------------------------------------------------------------------------------------------------*/
-
-
-
-/*LPF_Begin-----------------------------------------------------------------------------------------------------------------*/
-typedef struct
+/*  =========================== 一阶低通滤波器类 ===========================  */
+class LPFFilter
 {
-	float Last_Out;
-	float Ratio;
-}LPF_Data_t;
-float LPFFilter(LPF_Data_t *LPF_Data,float Inupt);
-/*LPF_End-----------------------------------------------------------------------------------------------------------------*/
+private:
+    float Last_Out;
+    float Ratio;
 
+public:
+    LPFFilter(float ratio = 0.5f);
+    float filter(float Input);
+    void setRatio(float ratio);
+    float getOutput() const;
+    float getRatio() const;
+};
 
-
-/*LimitFilter_Begin-----------------------------------------------------------------------------------------------------------------*/
-typedef struct
+/*  =========================== 限幅滤波器类 ===========================  */
+class LMFFilter
 {
-	float Last_Out;
-	float Limit_Ratio;
-}LMF_Data_t;
-float LPFFilter(LPF_Data_t *LPF_Data,float Inupt);
-/*LimitFilter_End-----------------------------------------------------------------------------------------------------------------*/
-/* USER CODE END Includes */
+private:
+    float Last_Out;
+    float Limit_Ratio;
 
-/* C++代码的声明 ----------------------------------------------------------*/
+public:
+    LMFFilter(float limit_ratio = 1.0f);
+    float filter(float Input);
+    void setLimit(float limit_ratio);
+    float getOutput() const;
+    float getLimitRatio() const;
+};
+
+// ===== 兼容旧接口 (typedef) =====
+// 保留 TD_t 类型别名，使 MotorControl.hpp 中 TD_t Filter 可编译
+// 后续可逐步替换为 TDFilter
+typedef TDFilter TD_t;
+
 #endif

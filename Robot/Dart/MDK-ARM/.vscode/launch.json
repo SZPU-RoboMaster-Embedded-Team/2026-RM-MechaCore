@@ -1,23 +1,29 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "cwd": "c:/Users/Creeper/Desktop/Dart/MDK-ARM",
-      "type": "cortex-debug",
-      "request": "launch",
-      "name": "C/C++ Runner: Debug Session",
-      "servertype": "openocd",
-      "executable": ".\\build\\Dart\\Dart.axf",
-      "device": "STM32F427IIH6",
-      "configFiles": [
-        "interface/cmsis-dap.cfg",
-        "target/stm32f4x.cfg"
-      ],
-      "liveWatch": {
-        "enabled": true,
-        "samplesPerSecond": 4
-      },
-      "rtos": "auto"
-    }
-  ] 
+    "configurations": [
+        {
+            "type": "cortex-debug",
+            "name": "Debug: OpenOCD(attach)",
+            "request": "attach",
+            "toolchainPrefix": "arm-none-eabi",
+            "armToolchainPath": "D:\\ST\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\\bin",
+            "cwd": "D:\\Github\\Fork\\2026-RM-MechaCore\\Robot\\Dart\\MDK-ARM",
+            "executable": "D:\\Github\\Fork\\2026-RM-MechaCore\\Robot\\Dart\\MDK-ARM\\build\\Dart\\Dart.elf",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 1 // 1. 降低频率，减轻 CMSIS-DAP 的通信压力
+            },
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/stm32f4x.cfg"
+            ],
+            // 2. 关键：解决 "reason 8" 并让 OpenOCD 明确当前控制目标
+            "postAttachCommands": [
+                "monitor targets stm32f4x.cpu",
+                "monitor gdb_sync",
+                "monitor resume" 
+            ],
+            "serverpath": "C:\\Users\\Creeper\\.eide\\tools\\openocd_7a1adfbec_mingw32\\bin\\openocd.exe"
+        }
+    ]
 }

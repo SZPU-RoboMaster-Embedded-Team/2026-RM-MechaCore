@@ -3,12 +3,20 @@
  * @brief 电机掉线检测和蜂鸣器报警功能实现
  */
 
+#include "InHpp.hpp"
 #include "MotorOfflineDetector.hpp"
+#include "SystemMonitor.hpp"
+#include "Buzzer.hpp"
+#include "Dart.hpp"
 
 /*  =========================== 全局变量的初始化 ===========================  */
 MotorStatus_t motor_status[MOTOR_COUNT] = {0};
 BuzzerControl_t buzzer_control = {BUZZER_IDLE, 0, 0, 0, {0}, 0, 0, 0};
 bool all_motors_connected = true;
+
+// 内部函数声明
+static void MotorOfflineDetector_HandleLEDs(void);
+
 /*  =========================== 函数的实现 ===========================  */
 
 /**
@@ -18,13 +26,17 @@ void MotorOfflineDetector_Init(void)
 {
     // 初始化所有电机状态
     for (int i = 0; i < MOTOR_COUNT; i++) {
-        motor_status[i].last_update_time = 0;
+        motor_status[i].last_update_time = HAL_GetTick(); // 初始化为当前时间，防止开机就秒报掉线
+        motor_status[i].is_enabled = true; // 默认全部开启检测
         motor_status[i].is_offline = false;
         motor_status[i].is_alarming = false;
         motor_status[i].alarm_count = 0;
         motor_status[i].alarm_start_time = 0;
         motor_status[i].cycle_start_time = 0;
     }
+    
+    // 特殊配置：0x201 预留位未接电机，忽略它的掉线检测
+    motor_status[MOTOR_ID_1].is_enabled = false;
     
     // 初始化蜂鸣器控制
     buzzer_control.state = BUZZER_IDLE;
@@ -48,21 +60,27 @@ void MotorOfflineDetector_Update(void)
     // 处理蜂鸣器报警
     MotorOfflineDetector_HandleBuzzer();
     
-    // 检查所有电机连接状态并设置playState
+    // 处理 8 颗开发板 LED 指示灯闪烁逻辑
+    MotorOfflineDetector_HandleLEDs();
+    
+    // 检查所有启用的电机连接状态并设置playState
+    static bool prev_all_motors_connected = true;
     all_motors_connected = true;
     for (int i = 0; i < MOTOR_COUNT; i++) {
-        if (motor_status[i].is_offline) {
+        if (motor_status[i].is_enabled && motor_status[i].is_offline) {
             all_motors_connected = false;
             break;
         }
     }
     
-    // 如果所有电机都连接了，设置playState为1，否则为0
-    // if (all_motors_connected) {
-    //     playState = 1;
-    // } else {
-    //     playState = 0;
-    // }
+    // 只有在【从全部掉线恢复到全部连接】的那一瞬间，才把 playState 置为 1 (触发唱歌)
+    // 并且在掉线的瞬间把 playState 置为 0 (打断唱歌)
+    if (all_motors_connected && !prev_all_motors_connected) {
+        playState = 1;
+    } else if (!all_motors_connected && prev_all_motors_connected) {
+        playState = 0;
+    }
+    prev_all_motors_connected = all_motors_connected;
 }
 
 /**
@@ -100,6 +118,11 @@ void MotorOfflineDetector_CheckOffline(void)
     uint32_t current_time = HAL_GetTick();
     
     for (int i = 0; i < MOTOR_COUNT; i++) {
+        // 如果电机未启用检测，直接跳过
+        if (!motor_status[i].is_enabled) {
+            continue;
+        }
+
         // 检查是否超过掉线阈值时间
         if (current_time - motor_status[i].last_update_time > OFFLINE_THRESHOLD_MS) {
             if (!motor_status[i].is_offline) {
@@ -376,3 +399,68 @@ bool MotorOfflineDetector_IsQueueEmpty(void)
 {
     return buzzer_control.queue_count == 0;
 }
+
+/**
+ * @brief 内部函数：处理与电机对应的8颗LED指示灯闪烁逻辑
+ * 如果电机掉线，其对应的 PG(1~8) 灯会连续闪烁 ID 次，然后休眠 1.5 秒循环。
+ * 正常连接（或者被禁用掉线检测的），保持常亮（低电平）。
+ */
+static void MotorOfflineDetector_HandleLEDs(void)
+{
+    static uint32_t last_led_tick = 0;
+    
+    // 每 50ms 更新一次 LED 状态机
+    if (SystemTick - last_led_tick < 50) {
+        return;
+    }
+    last_led_tick = SystemTick;
+
+    // PG1 到 PG8 引脚的映射 (索引 0~7 对应 MOTOR_ID_1~8)
+    const uint16_t led_pins[8] = {
+        GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3, GPIO_PIN_4, 
+        GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7, GPIO_PIN_8
+    };
+
+    // 记录每个 LED 的闪烁周期计数器 (静态数组)
+    static uint16_t led_tick_counters[8] = {0};
+
+    for (int i = 0; i < MOTOR_COUNT; i++) {
+        // 如果该电机没启用检测，或者连接正常，那就保持常灭 (SET)
+        if (!motor_status[i].is_enabled || !motor_status[i].is_offline) {
+            HAL_GPIO_WritePin(GPIOG, led_pins[i], GPIO_PIN_SET);
+            led_tick_counters[i] = 0; // 计数器清零，准备下次掉线用
+            continue;
+        }
+
+        // --- 以下是该电机已经掉线的闪烁逻辑 ---
+        uint16_t motor_id = i + 1; // 电机编号 1 到 8（决定了闪烁次数）
+        
+        // 每个周期的长度：1次闪烁包含 5个tick亮(250ms) + 5个tick灭(250ms) = 10个tick。
+        // 所以闪 motor_id 次需要 motor_id * 10 个 tick。
+        // 再加上 30 个 tick (1.5秒) 的最后休眠间隔。
+        uint16_t total_cycle_ticks = (motor_id * 10) + 30;
+
+        led_tick_counters[i]++;
+        if (led_tick_counters[i] > total_cycle_ticks) {
+            led_tick_counters[i] = 1; // 跑到结尾了，从头进入新轮回
+        }
+
+        // 取出当前 tick 进度
+        uint16_t t = led_tick_counters[i];
+
+        // 判断当前是不是在“闪烁期”
+        if (t <= (motor_id * 10)) {
+            // 在闪烁期内，每 5 个 tick (250ms) 翻转一次状态
+            // (t - 1) / 5 余数是偶数(0,2,4..)代表前段->亮；奇数(1,3,5..)代表后段->灭
+            if (((t - 1) / 5) % 2 == 0) {
+                HAL_GPIO_WritePin(GPIOG, led_pins[i], GPIO_PIN_RESET); // 亮
+            } else {
+                HAL_GPIO_WritePin(GPIOG, led_pins[i], GPIO_PIN_SET);   // 灭
+            }
+        } else {
+            // 如果已经度过了前面的闪烁期，进入休眠等待期，直接熄灭
+            HAL_GPIO_WritePin(GPIOG, led_pins[i], GPIO_PIN_SET); // 灭
+        }
+    }
+}
+
