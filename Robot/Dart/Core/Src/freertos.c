@@ -47,45 +47,45 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for PIDControlH */
-osThreadId_t PIDControlHHandle;
-const osThreadAttr_t PIDControlH_attributes = {
-  .name = "PIDControlH",
+/* Definitions for MotorControlTask */
+osThreadId_t MotorControlTaskHandle;
+const osThreadAttr_t MotorControlTask_attributes = {
+  .name = "MotorControlTask",
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for EventH */
-osThreadId_t EventHHandle;
-const osThreadAttr_t EventH_attributes = {
-  .name = "EventH",
+/* Definitions for InfoReportTask */
+osThreadId_t InfoReportTaskHandle;
+const osThreadAttr_t InfoReportTask_attributes = {
+  .name = "InfoReportTask",
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for DartH */
-osThreadId_t DartHHandle;
-const osThreadAttr_t DartH_attributes = {
-  .name = "DartH",
+/* Definitions for DartLogicTask */
+osThreadId_t DartLogicTaskHandle;
+const osThreadAttr_t DartLogicTask_attributes = {
+  .name = "DartLogicTask",
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
-/* Definitions for UartH */
-osThreadId_t UartHHandle;
-const osThreadAttr_t UartH_attributes = {
-  .name = "UartH",
+/* Definitions for UartSendTask */
+osThreadId_t UartSendTaskHandle;
+const osThreadAttr_t UartSendTask_attributes = {
+  .name = "UartSendTask",
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for VisionSendH */
-osThreadId_t VisionSendHHandle;
-const osThreadAttr_t VisionSendH_attributes = {
-  .name = "VisionSendH",
+/* Definitions for VisionCommTask */
+osThreadId_t VisionCommTaskHandle;
+const osThreadAttr_t VisionCommTask_attributes = {
+  .name = "VisionCommTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
-/* Definitions for TimerH */
-osThreadId_t TimerHHandle;
-const osThreadAttr_t TimerH_attributes = {
-  .name = "TimerH",
+/* Definitions for SystemMonitorTask */
+osThreadId_t SystemMonitorTaskHandle;
+const osThreadAttr_t SystemMonitorTask_attributes = {
+  .name = "SystemMonitorTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
@@ -100,12 +100,12 @@ const osMessageQueueAttr_t Queue_DT7ToGimbal_attributes = {
 
 /* USER CODE END FunctionPrototypes */
 
-void PIDControl(void *argument);
-void EventReport(void *argument);
-void Dart1(void *argument);
-void UartSend(void *argument);
-void VisionSend(void *argument);
-void TimerCallback(void *argument);
+void Motor_Task_Entry(void *argument);
+void Info_Task_Entry(void *argument);
+void Dart_Task_Entry(void *argument);
+void Uart_Task_Entry(void *argument);
+void Vision_Task_Entry(void *argument);
+void SystemMonitor_Task_Entry(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -140,23 +140,23 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of PIDControlH */
-  PIDControlHHandle = osThreadNew(PIDControl, NULL, &PIDControlH_attributes);
+  /* creation of MotorControlTask */
+  MotorControlTaskHandle = osThreadNew(Motor_Task_Entry, NULL, &MotorControlTask_attributes);
 
-  /* creation of EventH */
-  EventHHandle = osThreadNew(EventReport, NULL, &EventH_attributes);
+  /* creation of InfoReportTask */
+  InfoReportTaskHandle = osThreadNew(Info_Task_Entry, NULL, &InfoReportTask_attributes);
 
-  /* creation of DartH */
-  DartHHandle = osThreadNew(Dart1, NULL, &DartH_attributes);
+  /* creation of DartLogicTask */
+  DartLogicTaskHandle = osThreadNew(Dart_Task_Entry, NULL, &DartLogicTask_attributes);
 
-  /* creation of UartH */
-  UartHHandle = osThreadNew(UartSend, NULL, &UartH_attributes);
+  /* creation of UartSendTask */
+  UartSendTaskHandle = osThreadNew(Uart_Task_Entry, NULL, &UartSendTask_attributes);
 
-  /* creation of VisionSendH */
-  VisionSendHHandle = osThreadNew(VisionSend, NULL, &VisionSendH_attributes);
+  /* creation of VisionCommTask */
+  VisionCommTaskHandle = osThreadNew(Vision_Task_Entry, NULL, &VisionCommTask_attributes);
 
-  /* creation of TimerH */
-  TimerHHandle = osThreadNew(TimerCallback, NULL, &TimerH_attributes);
+  /* creation of SystemMonitorTask */
+  SystemMonitorTaskHandle = osThreadNew(SystemMonitor_Task_Entry, NULL, &SystemMonitorTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -168,112 +168,112 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_PIDControl */
+/* USER CODE BEGIN Header_Motor_Task_Entry */
 /**
-  * @brief  Function implementing the PIDControlH thread.
+  * @brief  电机PID控制任务入口 (MotorControlTask)
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_PIDControl */
-__weak void PIDControl(void *argument)
+/* USER CODE END Header_Motor_Task_Entry */
+__weak void Motor_Task_Entry(void *argument)
 {
-  /* USER CODE BEGIN PIDControl */
+  /* USER CODE BEGIN Motor_Task_Entry */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END PIDControl */
+  /* USER CODE END Motor_Task_Entry */
 }
 
-/* USER CODE BEGIN Header_EventReport */
+/* USER CODE BEGIN Header_Info_Task_Entry */
 /**
-* @brief Function implementing the EventH thread.
+* @brief 系统事件与调试信息报告任务 (InfoReportTask)
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_EventReport */
-__weak void EventReport(void *argument)
+/* USER CODE END Header_Info_Task_Entry */
+__weak void Info_Task_Entry(void *argument)
 {
-  /* USER CODE BEGIN EventReport */
+  /* USER CODE BEGIN Info_Task_Entry */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END EventReport */
+  /* USER CODE END Info_Task_Entry */
 }
 
-/* USER CODE BEGIN Header_Dart1 */
+/* USER CODE BEGIN Header_Dart_Task_Entry */
 /**
-* @brief Function implementing the DartH thread.
+* @brief 飞镖主逻辑与状态机任务 (DartLogicTask)
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_Dart1 */
-__weak void Dart1(void *argument)
+/* USER CODE END Header_Dart_Task_Entry */
+__weak void Dart_Task_Entry(void *argument)
 {
-  /* USER CODE BEGIN Dart1 */
+  /* USER CODE BEGIN Dart_Task_Entry */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END Dart1 */
+  /* USER CODE END Dart_Task_Entry */
 }
 
-/* USER CODE BEGIN Header_UartSend */
+/* USER CODE BEGIN Header_Uart_Task_Entry */
 /**
-* @brief Function implementing the UartH thread.
+* @brief 串口数据发送任务 (UartSendTask)
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_UartSend */
-__weak void UartSend(void *argument)
+/* USER CODE END Header_Uart_Task_Entry */
+__weak void Uart_Task_Entry(void *argument)
 {
-  /* USER CODE BEGIN UartSend */
+  /* USER CODE BEGIN Uart_Task_Entry */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END UartSend */
+  /* USER CODE END Uart_Task_Entry */
 }
 
-/* USER CODE BEGIN Header_VisionSend */
+/* USER CODE BEGIN Header_Vision_Task_Entry */
 /**
-* @brief Function implementing the VisionSendH thread.
+* @brief 视觉上位机通信任务 (VisionCommTask)
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_VisionSend */
-__weak void VisionSend(void *argument)
+/* USER CODE END Header_Vision_Task_Entry */
+__weak void Vision_Task_Entry(void *argument)
 {
-  /* USER CODE BEGIN VisionSend */
+  /* USER CODE BEGIN Vision_Task_Entry */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END VisionSend */
+  /* USER CODE END Vision_Task_Entry */
 }
 
-/* USER CODE BEGIN Header_TimerCallback */
+/* USER CODE BEGIN Header_SystemMonitor_Task_Entry */
 /**
-* @brief Function implementing the TimerH thread.
+* @brief 传感器轮询与蜂鸣器处理任务 (SystemTimerTask)
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_TimerCallback */
-__weak void TimerCallback(void *argument)
+/* USER CODE END Header_SystemMonitor_Task_Entry */
+__weak void SystemMonitor_Task_Entry(void *argument)
 {
-  /* USER CODE BEGIN TimerCallback */
+  /* USER CODE BEGIN SystemMonitor_Task_Entry */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END TimerCallback */
+  /* USER CODE END SystemMonitor_Task_Entry */
 }
 
 /* Private application code --------------------------------------------------*/

@@ -1,5 +1,5 @@
-#ifndef __MyTool_Hpp
-#define __MyTool_Hpp
+#ifndef __MathUtils_Hpp
+#define __MathUtils_Hpp
 #include "arm_math.h"
 namespace MyTool
 {

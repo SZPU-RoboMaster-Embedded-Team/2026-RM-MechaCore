@@ -21,7 +21,7 @@
 #define HX711_FILTER_DROP       5   // 去掉最大和最小各5个, 只保留中间10个求均值
 
 /*  =========================== HX711 驱动类 ===========================  */
-typedef class HX711_c
+class HX711Sensor
 {
 public:
     // ---- 对外接口 ----
@@ -32,14 +32,25 @@ public:
     void Tare(int samples = 20);    // 去皮 (取 samples 次平均值作为零点偏移)
     long GetWeight(void);           // 获取去皮后的滤波值
 
-    // ---- 状态 ----
-    long RawValue;
-    long FilteredValue;
-    long Offset;
-    long Weight;            // 去皮后的重量值 (即 FilteredValue - Offset)
-    float WeightScaled;     // 按比例缩放后的重量值 (比如保留一位小数)，类型改为 float
-    bool isOnline;
-    uint8_t Gain;
+    // ---- 状态变量（未滤波 vs 滤波 分离展示） ----
+    
+    // 【阶段 1】：原始瞬间读数 (未滤波 / 不稳定)
+    long  Raw_ADC;                // 1. 传感器瞬间返回的24位ADC绝对值
+    long  Raw_WeightInt;          // 2. 减去皮重(Offset)后的整数原始重量
+    float Raw_WeightReal;         // 3. 缩放后的真实物理重量 (如 kg/g，带小数)
+    
+    // 【阶段 2】：滑动滤波读数 (滤波后 / 稳定可用)
+    long  Filter_ADC;             // 1. 经过低通窗口滤波打磨后的ADC值
+    long  Filter_WeightInt;       // 2. 减去皮重(Offset)后的整数滤波重量
+    float Filter_WeightReal;      // 3. 缩放后的稳定的真实物理重量 (如 kg/g，最常用的值)
+    
+    // ---- 配置与校准参数 ----
+    long Offset;                    // 零点偏移（去皮零点 ADC 值）
+    bool isOnline;                  // 传感器在线状态
+    uint8_t Gain;                   // 增益配置
+
+    // ---- 调试专用 ----
+    uint8_t Debug_TareTrigger;      // 调试用触发器：在 Keil 里把它改成 1，就会自动去皮一次并归 0
 
 private:
     int  offlineCount;
@@ -50,12 +61,15 @@ private:
 
 public:
     // 构造函数 (兼容 ARMCC v5)
-    HX711_c() : RawValue(0), FilteredValue(0), Offset(0), Weight(0), WeightScaled(0), isOnline(false), Gain(HX711_GAIN_128),
+    HX711Sensor() : Raw_ADC(0), Raw_WeightInt(0), Raw_WeightReal(0.0f),
+                Filter_ADC(0), Filter_WeightInt(0), Filter_WeightReal(0.0f),
+                Offset(0), isOnline(false), Gain(HX711_GAIN_128),
+                Debug_TareTrigger(0),
                 offlineCount(0), filterIndex(0), filterFilled(false) {
         for(int i=0; i<HX711_FILTER_WINDOW; i++) filterBuffer[i] = 0;
     }
-} HX711_t;
+};
 
-extern HX711_t HX711;
+extern HX711Sensor HX711;
 
 #endif /* __HX711_HPP */

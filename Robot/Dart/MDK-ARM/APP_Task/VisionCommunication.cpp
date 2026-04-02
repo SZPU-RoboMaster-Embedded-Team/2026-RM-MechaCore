@@ -2,8 +2,8 @@
 #include "Buzzer.hpp"
 
 /*  =========================== 全局变量的初始化 ===========================  */
-VisionUartSend_t VisionUartSend       = {0};
-VisionUartReceive_t VisionUartReceive = {0};
+VisionUartSend_c VisionUartSend       = {0};
+VisionUartReceive_c VisionUartReceive = {0};
 unsigned char Arr_VisionSend[9]       = {0};
 short SendDelay                       = 1000 / VisionSendDelay; // 发送延时，单位为毫秒
 short SendDelayCount                  = 0;
@@ -17,7 +17,7 @@ short SendDelayCount                  = 0;
 * @details:    	该函数用于发送视觉通信的数据
 **********************************************************************
 **/
-void VisionSend(void *argument)
+void Vision_Task_Entry(void *argument)
 {
     /* USER CODE BEGIN LED_Flashing */
     TickType_t Lasttick = xTaskGetTickCount();
@@ -29,26 +29,21 @@ void VisionSend(void *argument)
     
     /* Infinite loop */
     for (;;) {
-        // VisionUartSend.Yaw_Temp = SpeedPID_AngleSensorM3508.Current - Dart_Yaw_Angle_Medium; // 计算Yaw轴角度(当前值-中值)
-        Arr_VisionSend[0] = 0x39;
-        Arr_VisionSend[1] = 0x39;
+        Arr_VisionSend[0] = VisionUartSend.Head;
+        Arr_VisionSend[1] = VisionUartSend.Head;                // 帧头0x39
 
-        /*
-        int Yaw_Temp      = ((VisionUartSend.Yaw_Temp) / 22.755556f) * 100.0f; 
-        */
+        VisionUartSend.YawAngle = (SpeedPID_AngleSensorM3508.Current - Dart_Yaw_Angle_Medium) 
+                                / 22.755556f * 100.0f;          // 计算Yaw轴角度(当前值-中值)
+        VisionUartSend.PullingForce = HX711.Filter_WeightInt;   // Beta：滤波后的拉簧拉力，暂时先用着，暂未解决温漂和蠕变的问题，也未实现闭环控制拉簧电机
+        VisionUartSend.DartIndex = AutoLaunch.CurrentDartIndex;
 
-        // AimingFinishCount 由 VisionControl() 直接操作 VisionUartSend.AimingFinishCount
-
-        VisionUartSend.YawAngle = (SpeedPID_AngleSensorM3508.Current - Dart_Yaw_Angle_Medium) / 22.755556f * 100.0f; // 计算Yaw轴角度(当前值-中值)
-        VisionUartSend.PullingForce = 250;
-
-        Arr_VisionSend[2] = VisionUartSend.YawAngle >> 8; // 镖架当前yaw角度 (高位)
-        Arr_VisionSend[3] = VisionUartSend.YawAngle & 0xFF; // 镖架当前yaw角度 (低位)
-        Arr_VisionSend[4] = VisionUartSend.PullingForce >> 8; // 拉簧拉力 (高位)
+        Arr_VisionSend[2] = VisionUartSend.YawAngle >> 8;       // 镖架当前yaw角度 (高位)
+        Arr_VisionSend[3] = VisionUartSend.YawAngle & 0xFF;     // 镖架当前yaw角度 (低位)
+        Arr_VisionSend[4] = VisionUartSend.PullingForce >> 8;   // 拉簧拉力 (高位)
         Arr_VisionSend[5] = VisionUartSend.PullingForce & 0xFF; // 拉簧拉力 (低位)
-        Arr_VisionSend[6] = VisionUartSend.AimingFinishCount;           // 瞄准完成计数
-        Arr_VisionSend[7] = VisionUartSend.DartIndex;                  // 当前飞镖序号
-        Arr_VisionSend[8] = VisionUartSend.Reserved;                   // 保留位
+        Arr_VisionSend[6] = VisionUartSend.AimingFinishCount;   // 瞄准完成计数
+        Arr_VisionSend[7] = VisionUartSend.DartIndex;           // 当前飞镖序号
+        Arr_VisionSend[8] = VisionUartSend.Reserved;            // 保留位
 
         SendDelayCount++;
         if (SendDelayCount >= SendDelay) {
@@ -69,9 +64,9 @@ void VisionSend(void *argument)
 * @details:    	该函数用于接收视觉通信的数据
 **********************************************************************
 **/
-void VisionUartReceiveClass::GetData()
+void VisionUartReceive_c::GetData()
 {
-    VisionUartReceiveClass::FixFrameError(); // 从 ReceiveArr 读取并修正到 ParsedArr
+    VisionUartReceive_c::FixFrameError(); // 从 ReceiveArr 读取并修正到 ParsedArr
 
     // 检查修正后的数据是否完整 (双帧头均为0x39)
     if (VisionUartReceive.ParsedArr[0] == 0x39 && VisionUartReceive.ParsedArr[1] == 0x39) {
@@ -101,7 +96,7 @@ void VisionUartReceiveClass::GetData()
 * @details:    	该函数用于纠正视觉通信的数据
 **********************************************************************
 **/
-void VisionUartReceiveClass::FixFrameError()
+void VisionUartReceive_c::FixFrameError()
 {
     int len = VisionUartReceiveLength;
     int header_pos = -1;
@@ -137,7 +132,7 @@ void VisionUartReceiveClass::FixFrameError()
 * @details:    	该函数用于定时检查视觉通信的连接状态并触发蜂鸣器提示
 **********************************************************************
 **/
-void VisionUartReceiveClass::CheckConnection()
+void VisionUartReceive_c::CheckConnection()
 {
     static bool boot_music_finished = false;
     uint32_t now = HAL_GetTick();

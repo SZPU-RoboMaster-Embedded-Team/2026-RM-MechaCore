@@ -1,6 +1,6 @@
 #include "InHpp.hpp"
 
-VofaCallBack_t VofaCallBack;
+VofaDebugger VofaCallBack;
 std::vector<std::string> VofaName;
 
 // // 判断字符串是否为有效数字
@@ -16,7 +16,7 @@ std::vector<std::string> VofaName;
 //     return true;
 // }
 
-// void VofaCallBack_t::GetData(const std::vector<uint8_t> &data)
+// void VofaDebugger::GetData(const std::vector<uint8_t> &data)
 // {
 //     // TODO: 实现数据获取逻辑
 //     VofaName.push_back("上膛电机转速");
@@ -68,7 +68,7 @@ std::vector<std::string> VofaName;
 //     }
 // }
 
-// void VofaCallBack_t::ExcuteResult(int index, int value)
+// void VofaDebugger::ExcuteResult(int index, int value)
 // {
 //     switch (index) {
 //         case 1:
@@ -92,7 +92,7 @@ std::vector<std::string> VofaName;
 //     }
 // }
 
-// void VofaCallBack_t::ProcessReceivedData()
+// void VofaDebugger::ProcessReceivedData()
 // {
 //     // 获取当前 DMA 传输剩余的数据量
 //     uint32_t remaining = __HAL_DMA_GET_COUNTER(VofaUartHandle.hdmarx);
@@ -118,7 +118,7 @@ std::vector<std::string> VofaName;
 //     HAL_UART_Receive_DMA(&VofaUartHandle, VofaCallBack.ReceiveArr, VofaReceiveLength);
 // }
 
-void VofaCallBack_t::ProcessReceivedData()
+void VofaDebugger::ProcessReceivedData()
 {
     __HAL_UART_CLEAR_IDLEFLAG(&VofaUartHandle); // 清除空闲中断标志位
     

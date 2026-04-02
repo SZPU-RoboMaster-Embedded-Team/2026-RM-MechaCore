@@ -10,7 +10,6 @@
 cmake-build-debug/
 build/
 *.uvguix.*
-*.uvoptx
 *.bak
 *.axf
 *.lst

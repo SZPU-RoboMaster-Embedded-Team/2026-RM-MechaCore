@@ -15,7 +15,7 @@ static uint32_t RMRefereeSystem_LastRxTick = 0;
 void CheckSystemStatus_TrafficLight();
 void SyncYawAngle();
 
-void TimerCallback(void *argument)
+void SystemMonitor_Task_Entry(void *argument)
 {
     /* USER CODE BEGIN LED_Flashing */
     TickType_t Lasttick = xTaskGetTickCount();
@@ -24,7 +24,7 @@ void TimerCallback(void *argument)
     MotorOfflineDetector_Init();
     Buzzer_Timers_Init();
     HX711.Init();
-    HX711.Offset = 8420300; // 固定零点值 (无需每次开机去皮)
+    HX711.Offset = 8420300; // 固定零点值 (无需每次开机去皮)【TODO：注意这个值是不好的，温漂和蠕变影响比较大，当前有待使用的去皮函数HX711.Tare()】
     vTaskDelay(3000);       // 延时，确保定时器初始化完成
     /* Infinite loop */
     for (;;) {
@@ -43,9 +43,9 @@ void TimerCallback(void *argument)
         VisionUartReceive.CheckConnection(); // 检查视觉连接状态
         Handle_Buzzer();               // 处理蜂鸣器播放
 
-        // HX711 非阻塞持续轮询 
+        // HX711 非阻塞持续轮询（HX711数据率为10Hz，每100ms更新一次）
         static uint32_t last_hx711_time = 0;
-        if (current_tick - last_hx711_time >= 5) {
+        if (current_tick - last_hx711_time >= 100) {
             HX711.ReadFiltered();
             last_hx711_time = current_tick;
         }

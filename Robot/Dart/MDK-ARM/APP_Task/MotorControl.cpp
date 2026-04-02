@@ -55,7 +55,7 @@ void MotorControl_Update()
     for (int i = 0; i < TOTAL_CONTROL_MOTORS; i++) {
         // Yaw 轴目标值由角度传感器的 PID 输出决定 (内环速度控制)
         if (i == INDEX_YAW) {
-            Motors[INDEX_YAW].SpeedPID.Target = -SpeedPID_AngleSensorM3508.Final_Output;
+            Motors[INDEX_YAW].Target = -SpeedPID_AngleSensorM3508.getOutput();
         }
         Motors[i].Update();
     }
@@ -70,74 +70,45 @@ static void MotorsInit()
     // INDEX_RESERVED (0x201): 保留位，不初始化PID
 
     // ===== 左边升降 M2006 (0x202) =====
-    Motors[INDEX_LEFT_LIFT].SpeedPID.Final_OutputLimit = 16000;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KP_GainCoefficient = 0;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KP_GainMiniL = 150;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KP_GainMaxL = 300;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KP = 15;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KI_OutLimit = 3000;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KI_Time = 1;
-    Motors[INDEX_LEFT_LIFT].SpeedPID.KI = 0.3;
+    // 旧参数: KP=15, KI=0.3, KI_Time=1, KD=0, OutputLimit=16000, KI_OutLimit=3000
+    // 新映射: ki=KI*KI_Time=0.3, integral_limit=KI_OutLimit/ki=10000
+    Motors[INDEX_LEFT_LIFT].SpeedPID.setK(15.0f, 0.3f, 0.0f);
+    Motors[INDEX_LEFT_LIFT].SpeedPID.setMax(16000.0f);
+    Motors[INDEX_LEFT_LIFT].SpeedPID.setIntegralLimit(10000.0f);
 
     // ===== 右边上膛 M3508 (0x203) =====
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.Final_OutputLimit = 16000;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP_GainCoefficient = 0;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP_GainMiniL = 150;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP_GainMaxL = 300;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KP = 17;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KI_OutLimit = 3000;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KI_Time = 1;
-    Motors[INDEX_RIGHT_LOAD].SpeedPID.KI = 0.1;
-    Motors[INDEX_RIGHT_LOAD].Filter.R = 380;
-    Motors[INDEX_RIGHT_LOAD].Filter.H = 0.001;
+    // 旧: KP=17, KI=0.1, integral_limit=30000
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.setK(17.0f, 0.1f, 0.0f);
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.setMax(16000.0f);
+    Motors[INDEX_RIGHT_LOAD].SpeedPID.setIntegralLimit(30000.0f);
+    Motors[INDEX_RIGHT_LOAD].Filter.setParams(380.0f, 0.001f);
 
     // ===== 左边上膛 M3508 (0x204) =====
-    Motors[INDEX_LEFT_LOAD].SpeedPID.Final_OutputLimit = 16000;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KP_GainCoefficient = 0;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KP_GainMiniL = 150;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KP_GainMaxL = 300;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KP = 17;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KI_OutLimit = 3000;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KI_Time = 1;
-    Motors[INDEX_LEFT_LOAD].SpeedPID.KI = 0.1;
-    Motors[INDEX_LEFT_LOAD].Filter.R = 380;
-    Motors[INDEX_LEFT_LOAD].Filter.H = 0.001;
+    Motors[INDEX_LEFT_LOAD].SpeedPID.setK(17.0f, 0.1f, 0.0f);
+    Motors[INDEX_LEFT_LOAD].SpeedPID.setMax(16000.0f);
+    Motors[INDEX_LEFT_LOAD].SpeedPID.setIntegralLimit(30000.0f);
+    Motors[INDEX_LEFT_LOAD].Filter.setParams(380.0f, 0.001f);
 
     // ===== Yaw轴 M6020 (0x205, 内环速度环) =====
-    Motors[INDEX_YAW].SpeedPID.Final_OutputLimit = 16000;
-    Motors[INDEX_YAW].SpeedPID.KP_GainCoefficient = 0;
-    Motors[INDEX_YAW].SpeedPID.KP_GainMiniL = 150;
-    Motors[INDEX_YAW].SpeedPID.KP_GainMaxL = 300;
-    Motors[INDEX_YAW].SpeedPID.KP = 13;
-    Motors[INDEX_YAW].SpeedPID.KI_OutLimit = 3000;
-    Motors[INDEX_YAW].SpeedPID.KI_Time = 1;
-    Motors[INDEX_YAW].SpeedPID.KI = 0;
+    // 旧: KP=13, KI=0, 无积分
+    Motors[INDEX_YAW].SpeedPID.setK(13.0f, 0.0f, 0.0f);
+    Motors[INDEX_YAW].SpeedPID.setMax(16000.0f);
 
     // ===== 右边升降 M2006 (0x206) =====
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.Final_OutputLimit = 16000;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP_GainCoefficient = 0;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP_GainMiniL = 150;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP_GainMaxL = 300;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KP = 15;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KI_OutLimit = 3000;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KI_Time = 1;
-    Motors[INDEX_RIGHT_LIFT].SpeedPID.KI = 0.3;
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.setK(15.0f, 0.3f, 0.0f);
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.setMax(16000.0f);
+    Motors[INDEX_RIGHT_LIFT].SpeedPID.setIntegralLimit(10000.0f);
 
     // ===== 拉簧调节 M3508 (0x207) =====
-    Motors[INDEX_SPRING].SpeedPID.Final_OutputLimit = 16000;
-    Motors[INDEX_SPRING].SpeedPID.KP_GainCoefficient = 0;
-    Motors[INDEX_SPRING].SpeedPID.KP_GainMiniL = 150;
-    Motors[INDEX_SPRING].SpeedPID.KP_GainMaxL = 300;
-    Motors[INDEX_SPRING].SpeedPID.KP = 10;
-    Motors[INDEX_SPRING].SpeedPID.KI_OutLimit = 3000;
-    Motors[INDEX_SPRING].SpeedPID.KI_Time = 1;
-    Motors[INDEX_SPRING].SpeedPID.KI = 0.7;
-    Motors[INDEX_SPRING].Filter.R = 380;
-    Motors[INDEX_SPRING].Filter.H = 0.001;
+    // 旧: KP=10, KI=0.7, integral_limit=3000/0.7≈4286
+    Motors[INDEX_SPRING].SpeedPID.setK(10.0f, 0.7f, 0.0f);
+    Motors[INDEX_SPRING].SpeedPID.setMax(16000.0f);
+    Motors[INDEX_SPRING].SpeedPID.setIntegralLimit(4286.0f);
+    Motors[INDEX_SPRING].Filter.setParams(380.0f, 0.001f);
 }
 
 /* Private application code --------------------------------------------------*/
-void PIDControl(void *argument)
+void Motor_Task_Entry(void *argument)
 {
     // 集中初始化所有电机的 PID 和 TD 参数
     MotorsInit();

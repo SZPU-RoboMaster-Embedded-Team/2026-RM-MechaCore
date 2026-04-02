@@ -53,13 +53,13 @@ void RmMotorGetCanData()
             
         case 0x203: // 右边上膛 M3508
             RMmotorClockwiseGetData(&Motors[INDEX_RIGHT_LOAD].Feedback, Can_RX.Data);
-            Motors[INDEX_RIGHT_LOAD].Feedback.RPM = TdFilter(&Motors[INDEX_RIGHT_LOAD].Filter, Motors[INDEX_RIGHT_LOAD].Feedback.RPM);
+            Motors[INDEX_RIGHT_LOAD].Feedback.RPM = Motors[INDEX_RIGHT_LOAD].Filter.filter(Motors[INDEX_RIGHT_LOAD].Feedback.RPM);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_3);
             break;
             
         case 0x204: // 左边上膛 M3508
             RMmotorClockwiseGetData(&Motors[INDEX_LEFT_LOAD].Feedback, Can_RX.Data);
-            Motors[INDEX_LEFT_LOAD].Feedback.RPM = TdFilter(&Motors[INDEX_LEFT_LOAD].Filter, Motors[INDEX_LEFT_LOAD].Feedback.RPM);
+            Motors[INDEX_LEFT_LOAD].Feedback.RPM = Motors[INDEX_LEFT_LOAD].Filter.filter(Motors[INDEX_LEFT_LOAD].Feedback.RPM);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_4);
             break;
             
@@ -75,7 +75,7 @@ void RmMotorGetCanData()
             
         case 0x207: // 拉簧调节 M3508
             RMmotorClockwiseGetData(&Motors[INDEX_SPRING].Feedback, Can_RX.Data);
-            Motors[INDEX_SPRING].Feedback.RPM = TdFilter(&Motors[INDEX_SPRING].Filter, Motors[INDEX_SPRING].Feedback.RPM);
+            Motors[INDEX_SPRING].Feedback.RPM = Motors[INDEX_SPRING].Filter.filter(Motors[INDEX_SPRING].Feedback.RPM);
             MotorOfflineDetector_UpdateMotorStatus(MOTOR_ID_7);
             break;
             

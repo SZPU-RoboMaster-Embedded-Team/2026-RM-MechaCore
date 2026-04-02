@@ -1,5 +1,5 @@
-#ifndef __Timer_Hpp
-#define __Timer_Hpp
+#ifndef __SystemMonitor_Hpp
+#define __SystemMonitor_Hpp
 
 #include "main.h"
 

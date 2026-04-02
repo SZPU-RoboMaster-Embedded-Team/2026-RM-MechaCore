@@ -8,7 +8,7 @@
 
 #define VofaReceiveLength 128 // Vofa接收数据长度
 
-typedef class VofaCallBackClass
+class VofaDebugger
 {
 public:
     uint32_t ReceivedLength; // 已接收数据长度
@@ -19,8 +19,8 @@ public:
     void ProcessReceivedData();
     void GetData(const std::vector<uint8_t> &data);
     void ExcuteResult(int index,int value);
-} VofaCallBack_t;
-extern VofaCallBack_t VofaCallBack;
+};
+extern VofaDebugger VofaCallBack;
 
 
 #endif

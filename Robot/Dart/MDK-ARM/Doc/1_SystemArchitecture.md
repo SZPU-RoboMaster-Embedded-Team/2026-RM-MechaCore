@@ -5,11 +5,11 @@
 
 ## 关键任务与事件流
 
-### 1. 逻辑处理任务 (`Dart1`)
-系统的高层逻辑位于 `APP_Task/Dart.cpp` 中的 `Dart1` 任务。它负责模式切换、安全检查以及为各个电机设定目标值。
+### 1. 逻辑处理任务 (`Dart_Task_Entry`)
+系统的高层逻辑位于 `APP_Task/Dart.cpp` 中的 `Dart_Task_Entry` 任务 (Handle: `DartLogicTask`)。它负责模式切换、安全检查以及为各个电机设定目标值。
 
 ```c++
-void Dart1(void *argument)
+void Dart_Task_Entry(void *argument)
 {
     Dart.DartInit(); 
     for (;;) {
@@ -19,11 +19,11 @@ void Dart1(void *argument)
 }
 ```
 
-### 2. 电机控制任务 (`PIDControl`)
-底层的 PID 计算与 CAN 通信位于 `APP_Task/MotorControl.cpp` 中的 `PIDControl` 任务。它以高频率执行所有受控电机的 PID 闭环并发送 CAN 数据包。
+### 2. 电机控制任务 (`Motor_Task_Entry`)
+底层的 PID 计算与 CAN 通信位于 `APP_Task/MotorControl.cpp` 中的 `Motor_Task_Entry` 任务 (Handle: `MotorControlTask`)。它以高频率执行所有受控电机的 PID 闭环并发送 CAN 数据包。
 
 ```c++
-void PIDControl(void *argument)
+void Motor_Task_Entry(void *argument)
 {
     MotorsInit(); // 初始化所有 PID 参数
     for (;;) {
@@ -33,6 +33,7 @@ void PIDControl(void *argument)
     }
 }
 ```
+
 
 ### 2. 定期事件 (`RegularEvent`)
 该函数每 1ms 执行一次，负责以下核心检查：

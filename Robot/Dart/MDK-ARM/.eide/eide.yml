@@ -183,6 +183,8 @@ targets:
         - RTE/_Dart
       libList: []
     excludeList: []
+    settings:
+      debugger: cortex-debug
     toolchain: AC5
     toolchainConfigMap:
       AC5:
@@ -327,6 +329,8 @@ targets:
         - RTE/_Gimbal
       libList: []
     excludeList: []
+    settings:
+      debugger: cortex-debug
     toolchain: AC5
     toolchainConfigMap:
       AC5:
